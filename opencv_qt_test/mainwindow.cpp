@@ -19,21 +19,6 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-// Draw circles at feature point locations on an image
-void drawOnImage(cv::Mat &image,
-                 const std::vector<cv::KeyPoint> &points,
-                 cv::Scalar color= cv::Scalar(255,255,255),
-                 int radius=3, int thickness=2) {
-    std::vector<cv::KeyPoint>::const_iterator it=
-            points.begin();
-    // for all corners
-    while (it!=points.end()) {
-        // draw a circle at each corner location
-        cv::circle(image,(*it).pt,radius,color,thickness);
-        ++it;
-    }
-}
-
 void MainWindow::on_loadBtn1_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
@@ -58,7 +43,7 @@ void MainWindow::on_loadBtn1_clicked()
         10);  // minimum allowed distance between points
 
     gftt.detect(image1,keypoints);
-    drawOnImage(image1,keypoints);
+    cv::drawKeypoints(image1,keypoints,image1,cv::Scalar::all(-1),cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 
     cv::namedWindow("First", CV_WINDOW_NORMAL);
     cv::resizeWindow("First", win_width, win_height);
@@ -102,7 +87,8 @@ void MainWindow::on_loadBtn2_clicked()
         10);  // minimum allowed distance between points
 
     gftt.detect(image2,keypoints);
-    drawOnImage(image2,keypoints);
+    cv::drawKeypoints(image2,keypoints,image2);
+//    drawOnImage(image2,keypoints);
 
     cv::namedWindow("Second", CV_WINDOW_NORMAL);
     cv::resizeWindow("Second", win_width, win_height);
