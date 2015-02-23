@@ -95,3 +95,39 @@ void MainWindow::on_loadBtn2_clicked()
     cv::imshow("Second", image2);
 }
 
+
+void MainWindow::on_webcamBtn_clicked()
+{
+    capture = cv::VideoCapture(0);
+    if(! capture.isOpened())
+    {
+        return;
+    }
+    cv::namedWindow("Webcam", CV_WINDOW_NORMAL);
+    while(1)
+    {
+        cv::Mat grayImg;
+        capture >> webcamImg;
+
+        cv::cvtColor(webcamImg, grayImg, CV_BGR2GRAY);
+
+        cv::GaussianBlur(grayImg, grayImg, cv::Size(3,3), 0);
+
+        std::vector<cv::KeyPoint> keypoints;
+        cv::GoodFeaturesToTrackDetector gftt(
+                    500,  // maximum number of corners to be returned
+                    0.01, // quality level
+                    10);  // minimum allowed distance between points
+
+        gftt.detect(grayImg,keypoints);
+        cv::drawKeypoints(webcamImg,keypoints,webcamImg, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT);
+
+        cv::imshow("Webcam", webcamImg);
+        if((cv::waitKey(10)) >= 0)
+        {
+            break;
+        }
+    }
+    capture.release();
+    cv::destroyWindow("Webcam");
+}
