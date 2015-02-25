@@ -5,6 +5,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include <opencv2/nonfree/features2d.hpp>
 #include <QFileDialog>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -114,13 +115,16 @@ void MainWindow::on_webcamBtn_clicked()
         cv::GaussianBlur(grayImg, grayImg, cv::Size(3,3), 0);
 
         std::vector<cv::KeyPoint> keypoints;
-        cv::GoodFeaturesToTrackDetector gftt(
-                    500,  // maximum number of corners to be returned
-                    0.01, // quality level
-                    10);  // minimum allowed distance between points
+//        cv::GoodFeaturesToTrackDetector gftt(
+//                    500,  // maximum number of corners to be returned
+//                    0.01, // quality level
+//                    10);  // minimum allowed distance between points
 
-        gftt.detect(grayImg,keypoints);
-        cv::drawKeypoints(webcamImg,keypoints,webcamImg, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT);
+//        gftt.detect(grayImg,keypoints);
+
+        cv::SiftFeatureDetector sift;
+        sift.detect(grayImg,keypoints);
+        cv::drawKeypoints(webcamImg,keypoints,webcamImg, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 
         cv::imshow("Webcam", webcamImg);
         if((cv::waitKey(10)) >= 0)

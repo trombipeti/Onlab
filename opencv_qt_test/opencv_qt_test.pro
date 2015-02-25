@@ -13,7 +13,7 @@ QMAKE_CXXFLAGS += -std=c++11
 TARGET = opencv_qt_test
 TEMPLATE = app
 
-CONFIG += link_pkgconfig
+CONFIG += link_pkgconfig -lopencv_nonfree
 PKGCONFIG += opencv
 
 SOURCES += main.cpp\
