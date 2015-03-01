@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QGraphicsScene>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -29,8 +30,9 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    cv::Mat image1;
-    cv::Mat image2;
+    QGraphicsScene *scene;
+
+    cv::Mat refImage;
     cv::Mat webcamImg;
     cv::VideoCapture capture;
 };

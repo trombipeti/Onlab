@@ -1,22 +1,33 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/nonfree/features2d.hpp>
 #include <QFileDialog>
+#include <QMessageBox>
+#include <QPixmap>
+#include <QGraphicsScene>
+#include <QGraphicsPixmapItem>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    scene = nullptr;
     ui->setupUi(this);
 }
 
 MainWindow::~MainWindow()
 {
+    if(capture.isOpened())
+    {
+        capture.release();
+    }
+    delete scene;
     delete ui;
 }
 
@@ -29,13 +40,14 @@ void MainWindow::on_loadBtn1_clicked()
     {
         return;
     }
-    image1 = cv::imread(fileName.toUtf8().data());
+    refImage = cv::imread(fileName.toUtf8().data());
     // Show on left label
     int win_width = 600;
-    int win_height = (600.0/(float)image1.cols) * image1.rows;
+    int win_height = (600.0/(float)refImage.cols) * refImage.rows;
 //    cv::resize(image,image,imgsize);
 
-    cv::cvtColor(image1,image1, CV_RGB2GRAY);
+    cv::Mat bwImage;
+    cv::cvtColor(refImage, bwImage, CV_RGB2GRAY);
 
     std::vector<cv::KeyPoint> keypoints;
     cv::GoodFeaturesToTrackDetector gftt(
@@ -43,69 +55,90 @@ void MainWindow::on_loadBtn1_clicked()
         0.01, // quality level
         10);  // minimum allowed distance between points
 
-    gftt.detect(image1,keypoints);
-    cv::drawKeypoints(image1,keypoints,image1,cv::Scalar::all(-1),cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+    gftt.detect(bwImage,keypoints);
+    cv::drawKeypoints(refImage,keypoints,refImage,cv::Scalar::all(-1),cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 
     cv::namedWindow("First", CV_WINDOW_NORMAL);
     cv::resizeWindow("First", win_width, win_height);
-    cv::imshow("First", image1);
+    cv::imshow("First", refImage);
 
 
-//    QVector<QRgb> colorTable;
-//    for (int i = 0; i < 256; i++) colorTable.push_back(qRgb(i, i, i));
+    QVector<QRgb> colorTable;
+    for (int i = 0; i < 256; i++) colorTable.push_back(qRgb(i, i, i));
 
-//    QImage img;
-//    img = QImage((const unsigned char*)image1.data, image1.rows, image1.cols, image1.step, QImage::Format_RGB888 );
-//    img.setColorTable(colorTable);
+////    img.setColorTable(colorTable);
 
-//    QPixmap pixmap = QPixmap::fromImage(img);
-////    ui->origImg->setText("Betöltve");
-//    ui->origImg->setPixmap(pixmap);
-//    ui->origImg->resize(ui->origImg->pixmap()->size());
+    QImage img;
+//    cv::cvtColor(refImage,refImage,CV_BGR2RGB);
+    std::cout << refImage.channels() << std::endl;
+    img = QImage((const unsigned char*)(refImage.data), refImage.cols, refImage.rows, refImage.step, QImage::Format_RGB888 ).rgbSwapped();
+
+    QPixmap pixmap = QPixmap::fromImage(img);
+    //    ui->refLabel->setText("Betöltve");
+    ui->refLabel->setPixmap(pixmap);
+    ui->refLabel->resize(ui->refLabel->pixmap()->size());
 }
 
 void MainWindow::on_loadBtn2_clicked()
 {
-    QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Open Image"), ".",
-                                                    tr("Image Files (*.png *.jpg *.jpeg *.bmp)"));
-    if(fileName.isEmpty())
+    if(capture.isOpened())
     {
+        capture.release();
+    }
+    capture = cv::VideoCapture(0);
+    if(! capture.isOpened())
+    {
+        QMessageBox mb;
+        mb.setText("Cannot open webcam");
+        mb.exec();
         return;
     }
-    image2 = cv::imread(fileName.toUtf8().data());
-    // Show on left label
-    int win_width = 600;
-    int win_height = (600.0/(float)image2.cols) * image2.rows;
-//    cv::resize(image,image,imgsize);
+//    while(1)
+//    {
+        cv::Mat webcam, gray;
+        capture >> webcam;
 
-    cv::cvtColor(image2,image2, CV_BGR2GRAY);
+        cv::resize(webcam, webcam, cv::Size(200,150));
 
-    std::vector<cv::KeyPoint> keypoints;
-    cv::GoodFeaturesToTrackDetector gftt(
-        500,  // maximum number of corners to be returned
-        0.01, // quality level
-        10);  // minimum allowed distance between points
+    //    img.setColorTable(colorTable);
 
-    gftt.detect(image2,keypoints);
-    cv::drawKeypoints(image2,keypoints,image2);
-//    drawOnImage(image2,keypoints);
+        cv::namedWindow("Valami");
+        cv::imshow("Valami", webcam);
 
-    cv::namedWindow("Second", CV_WINDOW_NORMAL);
-    cv::resizeWindow("Second", win_width, win_height);
-    cv::imshow("Second", image2);
+        QImage img;
+//        cv::cvtColor(webcam, gray, CV_BGR2GRAY);
+        img = QImage((const unsigned char*)gray.data, gray.cols, gray.rows, gray.step, QImage::Format_RGB888);
+        QPixmap pixmap = QPixmap::fromImage(img);
+        ui->refLabel->setText("Betöltve");
+        ui->refLabel->setPixmap(pixmap);
+        ui->refLabel->resize(ui->refLabel->pixmap()->size());
+
+//    }
+    capture.release();
 }
 
 
 void MainWindow::on_webcamBtn_clicked()
 {
+    static volatile bool webcam_on = false;
+    if(capture.isOpened())
+    {
+        ui->webcamBtn->setText(tr("Open webcam"));
+        capture.release();
+        webcam_on = false;
+        return;
+    }
     capture = cv::VideoCapture(0);
     if(! capture.isOpened())
     {
+        QMessageBox mb;
+        mb.setText("Cannot open webcam");
+        mb.exec();
         return;
     }
-    cv::namedWindow("Webcam", CV_WINDOW_NORMAL);
-    while(1)
+    webcam_on = true;
+    ui->webcamBtn->setText(tr("Take picture"));
+    while(webcam_on)
     {
         cv::Mat grayImg;
         capture >> webcamImg;
@@ -126,12 +159,17 @@ void MainWindow::on_webcamBtn_clicked()
         sift.detect(grayImg,keypoints);
         cv::drawKeypoints(webcamImg,keypoints,webcamImg, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 
-        cv::imshow("Webcam", webcamImg);
+
+        QImage img;
+        img = QImage((const unsigned char*)webcamImg.data, webcamImg.cols, webcamImg.rows, webcamImg.step, QImage::Format_RGB888).rgbSwapped();
+        QPixmap pixmap = QPixmap::fromImage(img);
+        ui->refLabel->setPixmap(pixmap);
+        ui->refLabel->resize(ui->refLabel->pixmap()->size());
+
         if((cv::waitKey(10)) >= 0)
         {
             break;
         }
     }
     capture.release();
-    cv::destroyWindow("Webcam");
 }
