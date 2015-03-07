@@ -21,13 +21,15 @@ public:
 
 private slots:
 
-    void on_loadBtn1_clicked();
+    void on_loadRefBtn_clicked();
 
-    void on_loadBtn2_clicked();
+    void on_takePicBtn_clicked();
 
     void on_webcamBtn_clicked();
 
 private:
+    volatile bool webcam_on;
+
     Ui::MainWindow *ui;
 
     QGraphicsScene *scene;

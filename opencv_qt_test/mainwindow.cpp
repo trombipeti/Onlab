@@ -13,6 +13,8 @@
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
 
+#include "qtcv.h"
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -26,12 +28,13 @@ MainWindow::~MainWindow()
     if(capture.isOpened())
     {
         capture.release();
+        webcam_on = false;
     }
     delete scene;
     delete ui;
 }
 
-void MainWindow::on_loadBtn1_clicked()
+void MainWindow::on_loadRefBtn_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
                                                     tr("Open Image"), ".",
@@ -79,7 +82,7 @@ void MainWindow::on_loadBtn1_clicked()
     ui->refLabel->resize(ui->refLabel->pixmap()->size());
 }
 
-void MainWindow::on_loadBtn2_clicked()
+void MainWindow::on_takePicBtn_clicked()
 {
     if(capture.isOpened())
     {
@@ -93,34 +96,16 @@ void MainWindow::on_loadBtn2_clicked()
         mb.exec();
         return;
     }
-//    while(1)
-//    {
-        cv::Mat webcam, gray;
-        capture >> webcam;
+    cv::Mat webcam, gray;
+    capture >> webcam;
 
-        cv::resize(webcam, webcam, cv::Size(200,150));
-
-    //    img.setColorTable(colorTable);
-
-        cv::namedWindow("Valami");
-        cv::imshow("Valami", webcam);
-
-        QImage img;
-//        cv::cvtColor(webcam, gray, CV_BGR2GRAY);
-        img = QImage((const unsigned char*)gray.data, gray.cols, gray.rows, gray.step, QImage::Format_RGB888);
-        QPixmap pixmap = QPixmap::fromImage(img);
-        ui->refLabel->setText("Betöltve");
-        ui->refLabel->setPixmap(pixmap);
-        ui->refLabel->resize(ui->refLabel->pixmap()->size());
-
-//    }
+    QtCV::drawMatOnLabel(webcam, ui->refLabel);
     capture.release();
 }
 
 
 void MainWindow::on_webcamBtn_clicked()
 {
-    static volatile bool webcam_on = false;
     if(capture.isOpened())
     {
         ui->webcamBtn->setText(tr("Open webcam"));
@@ -137,15 +122,15 @@ void MainWindow::on_webcamBtn_clicked()
         return;
     }
     webcam_on = true;
-    ui->webcamBtn->setText(tr("Take picture"));
-    while(webcam_on)
+    ui->webcamBtn->setText(tr("Close webcam"));
+    while(webcam_on && capture.isOpened())
     {
         cv::Mat grayImg;
         capture >> webcamImg;
 
-        cv::cvtColor(webcamImg, grayImg, CV_BGR2GRAY);
+//        cv::cvtColor(webcamImg, grayImg, CV_BGR2GRAY);
 
-        cv::GaussianBlur(grayImg, grayImg, cv::Size(3,3), 0);
+//        cv::GaussianBlur(grayImg, grayImg, cv::Size(3,3), 0);
 
         std::vector<cv::KeyPoint> keypoints;
 //        cv::GoodFeaturesToTrackDetector gftt(
@@ -155,21 +140,22 @@ void MainWindow::on_webcamBtn_clicked()
 
 //        gftt.detect(grayImg,keypoints);
 
-        cv::SiftFeatureDetector sift;
-        sift.detect(grayImg,keypoints);
-        cv::drawKeypoints(webcamImg,keypoints,webcamImg, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+//        cv::SiftFeatureDetector sift;
+//        sift.detect(grayImg,keypoints);
+//        cv::drawKeypoints(webcamImg,keypoints,webcamImg, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 
 
-        QImage img;
-        img = QImage((const unsigned char*)webcamImg.data, webcamImg.cols, webcamImg.rows, webcamImg.step, QImage::Format_RGB888).rgbSwapped();
-        QPixmap pixmap = QPixmap::fromImage(img);
-        ui->refLabel->setPixmap(pixmap);
-        ui->refLabel->resize(ui->refLabel->pixmap()->size());
+        QtCV::drawMatOnLabel(webcamImg, ui->refLabel);
+//        QImage img;
+//        img = QImage((const unsigned char*)webcamImg.data, webcamImg.cols, webcamImg.rows, webcamImg.step, QImage::Format_RGB888).rgbSwapped();
+//        QPixmap pixmap = QPixmap::fromImage(img);
+//        ui->refLabel->setPixmap(pixmap);
+//        ui->refLabel->resize(ui->refLabel->pixmap()->size());
 
-        if((cv::waitKey(10)) >= 0)
-        {
-            break;
-        }
     }
-    capture.release();
+    if(capture.isOpened())
+    {
+        capture.release();
+        webcam_on = false;
+    }
 }
