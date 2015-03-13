@@ -50,8 +50,8 @@ void MainWindow::on_loadRefBtn_clicked()
     }
     refImage = cv::imread(fileName.toUtf8().data());
 
-    int w = 400;
-    int h = refImage.rows * (400.0f / refImage.cols);
+    int w = 300;
+    int h = refImage.rows * (300.0f / refImage.cols);
     cv::Size newSize(w, h);
     cv::resize(refImage, refImageQT, newSize);
 
@@ -70,8 +70,8 @@ void MainWindow::on_loadDetectBtn_clicked()
     }
     testImage = cv::imread(fileName.toUtf8().data());
 
-    int w = 400;
-    int h = testImage.rows * (400.0f / testImage.cols);
+    int w = 300;
+    int h = testImage.rows * (300.0f / testImage.cols);
     cv::Size newSize(w, h);
     cv::resize(testImage, testImageQT, newSize);
 
@@ -93,8 +93,8 @@ void MainWindow::detectObjects()
     cv::cvtColor(refImage, refImageBW, CV_BGR2GRAY);
     cv::cvtColor(testImage, testImageBW, CV_BGR2GRAY);
 
-//    cv::GaussianBlur(refImageBW, refImageBW);
-//    cv::GaussianBlur(testImageBW, testImageBW);
+    cv::GaussianBlur(refImageBW, refImageBW, cv::Size(3,3), 0.5);
+    cv::GaussianBlur(testImageBW, testImageBW , cv::Size(3,3), 0.5);
 
     detector.detect(refImageBW, refKP);
     detector.detect(testImageBW, testKP);
