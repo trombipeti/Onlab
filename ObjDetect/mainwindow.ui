@@ -95,7 +95,7 @@
        </sizepolicy>
       </property>
       <property name="styleSheet">
-       <string notr="true">background-color: 'green'</string>
+       <string notr="true"/>
       </property>
       <property name="text">
        <string/>

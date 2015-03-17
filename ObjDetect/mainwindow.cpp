@@ -100,7 +100,7 @@ void MainWindow::detectObjects()
     {
         return;
     }
-    cv::SiftFeatureDetector detector{/*minHessian*/};
+    cv::SiftFeatureDetector detector{};
 
     std::vector<cv::KeyPoint> refKP, testKP;
 
@@ -135,7 +135,6 @@ void MainWindow::detectObjects()
         if( dist < minDst ) minDst = dist;
         if( dist > maxDst ) maxDst = dist;
     }
-    std::cout << "Min - max " << minDst << " - " << maxDst << std::endl;
 
     std::vector< cv::DMatch > good_matches;
 
@@ -149,8 +148,8 @@ void MainWindow::detectObjects()
 
     cv::Mat matchImg;
 
-    cv::drawMatches(refImageBW, refKP, testImageBW, testKP, matches, matchImg, cv::Scalar::all(-1), cv::Scalar::all(-1),
-                    std::vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+    cv::drawMatches(refImage, refKP, testImage, testKP, matches, matchImg, cv::Scalar::all(-1), cv::Scalar::all(-1),
+                    std::vector<char>(), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 
 
     std::vector<cv::Point2f> ref;
@@ -158,28 +157,28 @@ void MainWindow::detectObjects()
 
     for( size_t i = 0; i < good_matches.size(); i++ )
     {
-        //-- Get the keypoints from the good matches
         ref.push_back( refKP[ good_matches[i].queryIdx ].pt );
         test.push_back( testKP[ good_matches[i].trainIdx ].pt );
     }
 
     cv::Mat H = cv::findHomography( ref, test, CV_RANSAC );
 
-    //-- Get the corners from the image_1 ( the object to be "detected" )
-    std::vector<cv::Point2f> obj_corners(4);
-    obj_corners[0] = cvPoint(0,0);
-    obj_corners[1] = cvPoint( refImageBW.cols, 0 );
-    obj_corners[2] = cvPoint( refImageBW.cols, refImageBW.rows );
-    obj_corners[3] = cvPoint( 0, refImageBW.rows );
-    std::vector<cv::Point2f> scene_corners(4);
 
-    perspectiveTransform( obj_corners, scene_corners, H);
+    std::vector<cv::Point2f> refCorners(4);
+    refCorners[0] = cvPoint(0,0);
+    refCorners[1] = cvPoint( refImageBW.cols, 0 );
+    refCorners[2] = cvPoint( refImageBW.cols, refImageBW.rows );
+    refCorners[3] = cvPoint( 0, refImageBW.rows );
+    std::vector<cv::Point2f> foundObjCorners(4);
 
-    //-- Draw lines between the corners (the mapped object in the scene - image_2 )
-    cv::line( matchImg, scene_corners[0] + cv::Point2f( refImageBW.cols, 0), scene_corners[1] + cv::Point2f( refImageBW.cols, 0), cv::Scalar(0, 255, 0), 4 );
-    cv::line( matchImg, scene_corners[1] + cv::Point2f( refImageBW.cols, 0), scene_corners[2] + cv::Point2f( refImageBW.cols, 0), cv::Scalar( 0, 255, 0), 4 );
-    cv::line( matchImg, scene_corners[2] + cv::Point2f( refImageBW.cols, 0), scene_corners[3] + cv::Point2f( refImageBW.cols, 0), cv::Scalar( 0, 255, 0), 4 );
-    cv::line( matchImg, scene_corners[3] + cv::Point2f( refImageBW.cols, 0), scene_corners[0] + cv::Point2f( refImageBW.cols, 0), cv::Scalar( 0, 255, 0), 4 );
+    perspectiveTransform( refCorners, foundObjCorners, H);
+
+//    cv::Mat detectImg = testImage.clone();
+
+    cv::line( matchImg, foundObjCorners[0] + cv::Point2f( refImageBW.cols, 0), foundObjCorners[1] + cv::Point2f( refImageBW.cols, 0), cv::Scalar(0, 255, 0), 4 );
+    cv::line( matchImg, foundObjCorners[1] + cv::Point2f( refImageBW.cols, 0), foundObjCorners[2] + cv::Point2f( refImageBW.cols, 0), cv::Scalar( 0, 255, 0), 4 );
+    cv::line( matchImg, foundObjCorners[2] + cv::Point2f( refImageBW.cols, 0), foundObjCorners[3] + cv::Point2f( refImageBW.cols, 0), cv::Scalar( 0, 255, 0), 4 );
+    cv::line( matchImg, foundObjCorners[3] + cv::Point2f( refImageBW.cols, 0), foundObjCorners[0] + cv::Point2f( refImageBW.cols, 0), cv::Scalar( 0, 255, 0), 4 );
 
     ui->detectLabel->setCVImage(matchImg);
 }

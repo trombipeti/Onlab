@@ -5,6 +5,7 @@
 #include <QImage>
 #include <QResizeEvent>
 #include <QSize>
+#include <QSizePolicy>
 
 #include <sstream>
 
@@ -13,6 +14,9 @@
 QPicLabel::QPicLabel(QWidget *parent) :
     QLabel(parent)
 {
+    QSizePolicy p = sizePolicy();
+    p.setHeightForWidth(true);
+    setSizePolicy(p);
 }
 
 QPixmap QPixmapFromCvMat(const cv::Mat &image)
@@ -45,29 +49,20 @@ void QPicLabel::resizeEvent(QResizeEvent *event)
     }
 
     int w, h;
-    w = width();
+    w = (float)(width()) * 0.95f;
+    h = (float)(height()) * 0.95f;
 
-//    if(event->oldSize().width() > event->size().width())
-//    {
-//        w -= 10;
-//    }
-
-    h = height();
-
-//    if(event->oldSize().height() > event->size().height())
-//    {
-//        h -= 10;
-//    }
 
     setPixmap(QPixmapFromCvMat(cvImg).scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    std::cout << "resizeEvent: size " << height() << " " << width() << std::endl;
 //    repaint();
 }
 
 void QPicLabel::setCVImage(const cv::Mat &image)
 {
     cvImg = image;
-    std::cout << "setCVImage: size " << height() << " " << width() << std::endl;
-    setPixmap(QPixmapFromCvMat(cvImg).scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    int w, h;
+    w = (float)(width()) * 0.95f;
+    h = (float)(height()) * 0.95f;
+    setPixmap(QPixmapFromCvMat(cvImg).scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     repaint();
 }
