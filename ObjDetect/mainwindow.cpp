@@ -57,13 +57,14 @@ void MainWindow::drawMatOnLabel(const cv::Mat& mat, QLabel *label)
             .scaled(label->width(), label->height(), Qt::KeepAspectRatio);
 
     QPixmap pixmap = QPixmap::fromImage(img);
+
     label->setPixmap(pixmap);
 }
 
 void MainWindow::on_loadRefBtn_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Open Image"), "/home/trombipeti/Képek/ObjDetect",
+                                                    tr("Open Image Of Object"), "/home/trombipeti/Képek/ObjDetect",
                                                     tr("Image Files (*.png *.jpg *.jpeg *.bmp)"));
     if(fileName.isEmpty())
     {
@@ -73,14 +74,14 @@ void MainWindow::on_loadRefBtn_clicked()
 
     resizeImg(refImage, refImage, 1000, 1000);
 
-    drawMatOnLabel(refImage, ui->refPicLabel);
+    ui->refPicLabel->setCVImage(refImage);
 
 }
 
 void MainWindow::on_loadDetectBtn_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Open Image"), "/home/trombipeti/Képek/ObjDetect",
+                                                    tr("Open Image Of Scene"), "/home/trombipeti/Képek/ObjDetect",
                                                     tr("Image Files (*.png *.jpg *.jpeg *.bmp)"));
     if(fileName.isEmpty())
     {
@@ -90,7 +91,7 @@ void MainWindow::on_loadDetectBtn_clicked()
 
     resizeImg(testImage, testImage, 1000, 1000);
 
-    drawMatOnLabel(testImage, ui->testPicLabel);
+    ui->testPicLabel->setCVImage(testImage);
 }
 
 void MainWindow::detectObjects()
@@ -180,14 +181,7 @@ void MainWindow::detectObjects()
     cv::line( matchImg, scene_corners[2] + cv::Point2f( refImageBW.cols, 0), scene_corners[3] + cv::Point2f( refImageBW.cols, 0), cv::Scalar( 0, 255, 0), 4 );
     cv::line( matchImg, scene_corners[3] + cv::Point2f( refImageBW.cols, 0), scene_corners[0] + cv::Point2f( refImageBW.cols, 0), cv::Scalar( 0, 255, 0), 4 );
 
-
-    int w = 800;
-    int h = matchImg.rows * (800.0f / matchImg.cols);
-    cv::Size newSize(w, h);
-
-    cv::resize(matchImg, matchImg, newSize);
-
-    drawMatOnLabel(matchImg, ui->detectLabel);
+    ui->detectLabel->setCVImage(matchImg);
 }
 
 void MainWindow::on_detectBtn_clicked()

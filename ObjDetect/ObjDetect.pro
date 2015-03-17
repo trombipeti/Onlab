@@ -17,8 +17,10 @@ CONFIG += link_pkgconfig
 PKGCONFIG += opencv
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    qpiclabel.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    qpiclabel.h
 
 FORMS    += mainwindow.ui
