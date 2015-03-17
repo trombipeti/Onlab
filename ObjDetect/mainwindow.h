@@ -26,19 +26,15 @@ private slots:
 
     void on_detectBtn_clicked();
 
-    void on_hessianSlider_valueChanged(int value);
-
 private:
     Ui::MainWindow *ui;
 
-    cv::Mat refImage, refImageQT;
-    cv::Mat testImage, testImageQT;
-
-    int minHessian;
-    bool detectRan;
+    cv::Mat refImage;
+    cv::Mat testImage;
 
     void detectObjects();
-    void drawMatOnLabel(const cv::Mat &mat, QLabel *label);
+    void resizeImg(cv::Mat& img, cv::Mat& dest, int width, int height, bool keepPersp = true);
+    void drawMatOnLabel(const cv::Mat& mat, QLabel *label);
 };
 
 #endif // MAINWINDOW_H

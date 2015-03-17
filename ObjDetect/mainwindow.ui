@@ -15,16 +15,10 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="6" column="0" colspan="2">
-     <widget class="QPushButton" name="detectBtn">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
+    <item row="0" column="0">
+     <widget class="QPushButton" name="loadRefBtn">
       <property name="text">
-       <string>Detect matches</string>
+       <string>Load reference image</string>
       </property>
      </widget>
     </item>
@@ -37,6 +31,9 @@
     </item>
     <item row="3" column="1">
      <widget class="QLabel" name="testPicLabel">
+      <property name="styleSheet">
+       <string notr="true">QLabel {background-color: green}</string>
+      </property>
       <property name="text">
        <string>Test test picture</string>
       </property>
@@ -45,7 +42,7 @@
       </property>
      </widget>
     </item>
-    <item row="7" column="0" colspan="2">
+    <item row="6" column="0" colspan="2">
      <widget class="QLabel" name="detectLabel">
       <property name="text">
        <string>Detected matches</string>
@@ -57,6 +54,12 @@
     </item>
     <item row="3" column="0">
      <widget class="QLabel" name="refPicLabel">
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLabel {background-color: green}</string>
+      </property>
       <property name="text">
        <string>Reference picture</string>
       </property>
@@ -65,29 +68,16 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="0">
-     <widget class="QPushButton" name="loadRefBtn">
-      <property name="text">
-       <string>Load reference image</string>
-      </property>
-     </widget>
-    </item>
     <item row="5" column="0" colspan="2">
-     <widget class="QSlider" name="hessianSlider">
-      <property name="minimum">
-       <number>400</number>
+     <widget class="QPushButton" name="detectBtn">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
       </property>
-      <property name="maximum">
-       <number>2000</number>
-      </property>
-      <property name="singleStep">
-       <number>1</number>
-      </property>
-      <property name="pageStep">
-       <number>10</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+      <property name="text">
+       <string>Detect matches</string>
       </property>
      </widget>
     </item>

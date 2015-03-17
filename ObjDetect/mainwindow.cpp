@@ -18,9 +18,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui{new Ui::MainWindow}
 {
     ui->setupUi(this);
-    minHessian = 400;
-    ui->hessianSlider->setValue(minHessian);
-    detectRan = false;
 }
 
 MainWindow::~MainWindow()
@@ -28,21 +25,45 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::drawMatOnLabel(const cv::Mat &mat, QLabel *label)
+void MainWindow::resizeImg(cv::Mat& img, cv::Mat& dest, int width, int height, bool keepPersp)
+{
+    if(keepPersp)
+    {
+        cv::Size newSize;
+        bool wBigger = (width > height);
+        if(wBigger)
+        {
+            newSize.width = width;
+            newSize.height = img.rows * ((float)newSize.width / img.cols);
+        }
+        else
+        {
+            newSize.height = height;
+            newSize.width = img.cols * ((float)newSize.height / img.rows);
+        }
+        cv::resize(img, dest, newSize);
+    }
+    else
+    {
+        cv::resize(img, dest, cv::Size(width, height));
+    }
+}
+
+void MainWindow::drawMatOnLabel(const cv::Mat& mat, QLabel *label)
 {
     QImage img;
-    img = QImage((const unsigned char*)mat.data, mat.cols, mat.rows, mat.step, QImage::Format_RGB888).rgbSwapped();
+    img = (QImage((const unsigned char*)mat.data, mat.cols, mat.rows, mat.step, QImage::Format_RGB888)
+           .rgbSwapped())
+            .scaled(label->width(), label->height(), Qt::KeepAspectRatio);
+
     QPixmap pixmap = QPixmap::fromImage(img);
     label->setPixmap(pixmap);
-    label->resize(label->pixmap()->size());
-    std::cout << "Label size after Mat draw:" << std::endl;
-    std::cout << label->width() << "x" << label->height() << std::endl;
 }
 
 void MainWindow::on_loadRefBtn_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Open Image"), QDir::homePath(),
+                                                    tr("Open Image"), "/home/trombipeti/Képek/ObjDetect",
                                                     tr("Image Files (*.png *.jpg *.jpeg *.bmp)"));
     if(fileName.isEmpty())
     {
@@ -50,19 +71,16 @@ void MainWindow::on_loadRefBtn_clicked()
     }
     refImage = cv::imread(fileName.toUtf8().data());
 
-    int w = 300;
-    int h = refImage.rows * (300.0f / refImage.cols);
-    cv::Size newSize(w, h);
-    cv::resize(refImage, refImageQT, newSize);
+    resizeImg(refImage, refImage, 1000, 1000);
 
-    drawMatOnLabel(refImageQT, ui->refPicLabel);
-    detectRan = false;
+    drawMatOnLabel(refImage, ui->refPicLabel);
+
 }
 
 void MainWindow::on_loadDetectBtn_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Open Image"), QDir::homePath(),
+                                                    tr("Open Image"), "/home/trombipeti/Képek/ObjDetect",
                                                     tr("Image Files (*.png *.jpg *.jpeg *.bmp)"));
     if(fileName.isEmpty())
     {
@@ -70,13 +88,9 @@ void MainWindow::on_loadDetectBtn_clicked()
     }
     testImage = cv::imread(fileName.toUtf8().data());
 
-    int w = 300;
-    int h = testImage.rows * (300.0f / testImage.cols);
-    cv::Size newSize(w, h);
-    cv::resize(testImage, testImageQT, newSize);
+    resizeImg(testImage, testImage, 1000, 1000);
 
-    drawMatOnLabel(testImageQT, ui->testPicLabel);
-    detectRan = false;
+    drawMatOnLabel(testImage, ui->testPicLabel);
 }
 
 void MainWindow::detectObjects()
@@ -85,7 +99,7 @@ void MainWindow::detectObjects()
     {
         return;
     }
-    cv::SurfFeatureDetector detector{minHessian};
+    cv::SiftFeatureDetector detector{/*minHessian*/};
 
     std::vector<cv::KeyPoint> refKP, testKP;
 
@@ -93,15 +107,15 @@ void MainWindow::detectObjects()
     cv::cvtColor(refImage, refImageBW, CV_BGR2GRAY);
     cv::cvtColor(testImage, testImageBW, CV_BGR2GRAY);
 
-    cv::GaussianBlur(refImageBW, refImageBW, cv::Size(3,3), 0.5);
-    cv::GaussianBlur(testImageBW, testImageBW , cv::Size(3,3), 0.5);
+    cv::GaussianBlur(refImageBW, refImageBW, cv::Size(3,3), 1);
+    cv::GaussianBlur(testImageBW, testImageBW , cv::Size(3,3), 1);
 
     detector.detect(refImageBW, refKP);
     detector.detect(testImageBW, testKP);
 
     cv::Mat refDesc, testDesc;
 
-    cv::SurfDescriptorExtractor extractor;
+    cv::SiftDescriptorExtractor extractor;
 
     extractor.compute(refImageBW, refKP, refDesc);
     extractor.compute(testImageBW, testKP, testDesc);
@@ -174,19 +188,9 @@ void MainWindow::detectObjects()
     cv::resize(matchImg, matchImg, newSize);
 
     drawMatOnLabel(matchImg, ui->detectLabel);
-    detectRan = true;
 }
 
 void MainWindow::on_detectBtn_clicked()
 {
     detectObjects();
-}
-
-void MainWindow::on_hessianSlider_valueChanged(int value)
-{
-    minHessian = value;
-    if(detectRan)
-    {
-        detectObjects();
-    }
 }
