@@ -122,7 +122,7 @@ void MainWindow::on_detectBtn_clicked()
 {
 //    detectObjects();
     ImageMatcher matcher(refImage, testImage);
-    if(matcher.classify())
+    if(matcher.classify(true))
     {
         ui->detectLabel->setText("Egyezik");
     }

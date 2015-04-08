@@ -67,7 +67,7 @@ public:
         refImage{_refFile}, testImage{_testFile}
     {}
 
-    bool classify();
+    bool classify(bool display_matches = false);
 };
 
 #endif // IMAGEMATCHER_H

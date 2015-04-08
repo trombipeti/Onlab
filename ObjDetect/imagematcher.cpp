@@ -1,5 +1,7 @@
 #include "imagematcher.h"
 
+#include <iostream>
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -9,7 +11,7 @@
 #include <vector>
 
 size_t ImageMatcher::minGoodMatchSize = 15;
-size_t ImageMatcher::minValidMatchSize = 10;
+size_t ImageMatcher::minValidMatchSize = 7;
 float ImageMatcher::minSecondTestRatio = 0.95;
 float ImageMatcher::minFeatureDist = 0.25;
 
@@ -46,10 +48,10 @@ bool ImageMatcher::filterMatches(std::vector<std::vector<cv::DMatch> >& matches,
         cv::DMatch& best = knn[0];
         cv::DMatch& second = knn[1];
         // Ha a legjobb nem "sokkal jobb", mint a masodik legjobb, akkor figyelmen kivul hagyjuk
-//        if(second.distance * minSecondTestRatio >= best.distance)
-//        {
-//            continue;
-//        }
+        if(best.distance * minSecondTestRatio >= second.distance)
+        {
+            continue;
+        }
 
         bool crossMatch = false;
         for(auto knnRev : matchesReverse)
@@ -70,6 +72,7 @@ bool ImageMatcher::filterMatches(std::vector<std::vector<cv::DMatch> >& matches,
     }
     if(good_matches.size() < minGoodMatchSize)
     {
+        std::cout << "Good matches size too small (" << good_matches.size() << " < " << minGoodMatchSize << ")" << std::endl;
         return false;
     }
 
@@ -103,13 +106,14 @@ bool ImageMatcher::validateMatches()
 
     if(valid_matches.size() < minValidMatchSize)
     {
+        std::cout << "Valid matches size too small (" << valid_matches.size() << " < " << minValidMatchSize << ")" << std::endl;
         featureDist = INFINITY;
         return false;
     }
     return true;
 }
 
-bool ImageMatcher::classify()
+bool ImageMatcher::classify(bool display_matches)
 {
 
     detectKeypoints();
@@ -123,19 +127,55 @@ bool ImageMatcher::classify()
 
     if( !filterMatches(knnMatches, knnMatchesReverse))
     {
+        std::cout << "Filter matches returned false" << std::endl;
         return false;
+    }
+
+    if(display_matches)
+    {
+        cv::Mat goodImg;
+        cv::drawMatches(refImage.img, refImage.keyPoints, testImage.img, testImage.keyPoints, good_matches, goodImg,
+                        cv::Scalar::all(-1), cv::Scalar::all(-1),  std::vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+        cv::namedWindow("Good matches", CV_WINDOW_NORMAL);
+        cv::imshow("Good matches", goodImg);
     }
 
     if(!validateMatches())
     {
-        return true;
+        std::cout << "Validate matches returned false" << std::endl;
+        return false;
     }
 
-    featureDist = featureDist / valid_matches.size();
+
+    featureDist = featureDist / (valid_matches.size() * valid_matches.size() * valid_matches.size());
 
     if(featureDist < minFeatureDist)
     {
+        if(display_matches)
+        {
+            cv::Mat validImg;
+
+            std::vector<cv::Point2f> matched_points;
+
+            for(size_t i = 0;i<valid_matches.size();++i)
+            {
+                matched_points.push_back(testImage.keyPoints[valid_matches[i].trainIdx].pt);
+            }
+
+            cv::Rect bbox = cv::boundingRect(cv::Mat(matched_points).reshape(2));
+            cv::rectangle(testImage.img, bbox, cv::Scalar(0,200,10), 2);
+
+            cv::drawMatches(refImage.img, refImage.keyPoints, testImage.img, testImage.keyPoints, valid_matches, validImg );
+
+            cv::namedWindow("Valid matches", CV_WINDOW_NORMAL);
+            cv::imshow("Valid matches", validImg);
+
+        }
         return true;
+    }
+    else
+    {
+        std::cout << "Feature distance too big: (" << featureDist << " > " << minFeatureDist << ")" << std::endl;
     }
     return false;
 }
