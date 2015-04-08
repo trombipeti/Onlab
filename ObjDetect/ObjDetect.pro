@@ -18,9 +18,13 @@ PKGCONFIG += opencv
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    qpiclabel.cpp
+    qpiclabel.cpp \
+    imagematcher.cpp \
+    pricetagdetector.cpp
 
 HEADERS  += mainwindow.h \
-    qpiclabel.h
+    qpiclabel.h \
+    imagematcher.h \
+    pricetagdetector.h
 
 FORMS    += mainwindow.ui

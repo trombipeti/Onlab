@@ -34,7 +34,6 @@ private:
 
     void detectObjects();
     void resizeImg(cv::Mat& img, cv::Mat& dest, int width, int height, bool keepPersp = true);
-    void drawMatOnLabel(const cv::Mat& mat, QLabel *label);
 };
 
 #endif // MAINWINDOW_H
