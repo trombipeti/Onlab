@@ -10,11 +10,45 @@
 #include <opencv2/calib3d/calib3d.hpp>
 #include <vector>
 
-size_t ImageMatcher::minGoodMatchSize = 15;
-size_t ImageMatcher::minValidMatchSize = 7;
-float ImageMatcher::minSecondTestRatio = 0.95;
-float ImageMatcher::minFeatureDist = 0.25;
+float ImageMatcher::getMinSecondTestRatio() const
+{
+    return minSecondTestRatio;
+}
 
+void ImageMatcher::setMinSecondTestRatio(float value)
+{
+    minSecondTestRatio = value;
+}
+
+float ImageMatcher::getMinFeatureDist() const
+{
+    return minFeatureDist;
+}
+
+void ImageMatcher::setMinFeatureDist(float value)
+{
+    minFeatureDist = value;
+}
+
+size_t ImageMatcher::getMinValidMatchSize() const
+{
+    return minValidMatchSize;
+}
+
+void ImageMatcher::setMinValidMatchSize(const size_t &value)
+{
+    minValidMatchSize = value;
+}
+
+size_t ImageMatcher::getMinGoodMatchSize() const
+{
+    return minGoodMatchSize;
+}
+
+void ImageMatcher::setMinGoodMatchSize(const size_t &value)
+{
+    minGoodMatchSize = value;
+}
 void ImageMatcher::detectKeypoints()
 {
     cv::SiftFeatureDetector detector{};

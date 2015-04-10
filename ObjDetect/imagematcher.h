@@ -15,11 +15,12 @@ class ImageMatcher
 {
 private:
 
+
     float featureDist = INFINITY;
-    static size_t minGoodMatchSize;
-    static size_t minValidMatchSize;
-    static float minFeatureDist;
-    static float minSecondTestRatio;
+    size_t minGoodMatchSize = 15;
+    size_t minValidMatchSize = 10;
+    float minFeatureDist = 0.25f;
+    float minSecondTestRatio = 0.92f;
 
     struct ImageData
     {
@@ -56,10 +57,9 @@ private:
 
     bool filterMatches(std::vector<std::vector<cv::DMatch> > &matches, std::vector<std::vector<cv::DMatch> > &matchesReverse );
     bool validateMatches();
-    void sumFeatureDist();
 
 public:
-    ImageMatcher(cv::Mat const& _refImg, cv::Mat const& _testImg) :
+    ImageMatcher(cv::Mat const& _refImg = cv::Mat(), cv::Mat const& _testImg = cv::Mat()) :
         refImage{_refImg}, testImage{_testImg}
     {}
 
@@ -67,7 +67,27 @@ public:
         refImage{_refFile}, testImage{_testFile}
     {}
 
+    void setRefImg(cv::Mat img)
+    {
+        refImage = ImageData{img};
+    }
+
+    void setTestImg(cv::Mat img)
+    {
+        testImage = ImageData{img};
+    }
+
     bool classify(bool display_matches = false);
+
+
+    float getMinSecondTestRatio() const;
+    void setMinSecondTestRatio(float value);
+    float getMinFeatureDist() const;
+    void setMinFeatureDist(float value);
+    size_t getMinValidMatchSize() const;
+    void setMinValidMatchSize(const size_t &value);
+    size_t getMinGoodMatchSize() const;
+    void setMinGoodMatchSize(const size_t &value);
 };
 
 #endif // IMAGEMATCHER_H
