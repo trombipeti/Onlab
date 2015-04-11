@@ -79,7 +79,7 @@ void MainWindow::on_loadRefBtn_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
                                                     tr("Open Image Of Object"), "/home/trombipeti/Képek/ObjDetect",
-                                                    tr("Image Files (*.png *.jpg *.jpeg *.bmp)"));
+                                                    tr("Image Files (*.png *.jpg *.jpeg *.bmp *.tif)"));
     if(fileName.isEmpty())
     {
         return;
@@ -106,7 +106,7 @@ void MainWindow::on_loadDetectBtn_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
                                                     tr("Open Image Of Scene"), "/home/trombipeti/Képek/ObjDetect",
-                                                    tr("Image Files (*.png *.jpg *.jpeg *.bmp)"));
+                                                    tr("Image Files (*.png *.jpg *.jpeg *.bmp *.tif)"));
     if(fileName.isEmpty())
     {
         return;
