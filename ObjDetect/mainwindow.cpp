@@ -42,6 +42,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->minFeatDistSlider->setMinimum(0);
     ui->minFeatDistSlider->setMaximum(200);
     ui->minFeatDistSlider->setValue(25);
+
+    ui->detectBtn->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -93,6 +95,11 @@ void MainWindow::on_loadRefBtn_clicked()
 
     ui->refPicLabel->setCVImage(refImage);
 
+    if( ! testImage.empty())
+    {
+        ui->detectBtn->setEnabled(true);
+    }
+
 }
 
 void MainWindow::on_loadDetectBtn_clicked()
@@ -109,6 +116,11 @@ void MainWindow::on_loadDetectBtn_clicked()
     resizeImg(testImage, testImage, 1000, 1000);
 
     ui->testPicLabel->setCVImage(testImage);
+
+    if( ! refImage.empty())
+    {
+        ui->detectBtn->setEnabled(true);
+    }
 }
 
 

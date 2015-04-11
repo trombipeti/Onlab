@@ -149,6 +149,14 @@ bool ImageMatcher::validateMatches()
 
 bool ImageMatcher::classify(bool display_matches)
 {
+    if(refImage.img.empty())
+    {
+        throw "Reference image not set!";
+    }
+    if(testImage.img.empty())
+    {
+        throw "Test image not set!";
+    }
 
     detectKeypoints();
 
@@ -165,14 +173,14 @@ bool ImageMatcher::classify(bool display_matches)
         return false;
     }
 
-    if(display_matches)
-    {
-        cv::Mat goodImg;
-        cv::drawMatches(refImage.img, refImage.keyPoints, testImage.img, testImage.keyPoints, good_matches, goodImg,
-                        cv::Scalar::all(-1), cv::Scalar::all(-1),  std::vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
-        cv::namedWindow("Good matches", CV_WINDOW_NORMAL);
-        cv::imshow("Good matches", goodImg);
-    }
+//    if(display_matches)
+//    {
+//        cv::Mat goodImg;
+//        cv::drawMatches(refImage.img, refImage.keyPoints, testImage.img, testImage.keyPoints, good_matches, goodImg,
+//                        cv::Scalar::all(-1), cv::Scalar::all(-1),  std::vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+//        cv::namedWindow("Good matches", CV_WINDOW_NORMAL);
+//        cv::imshow("Good matches", goodImg);
+//    }
 
     if(!validateMatches())
     {
