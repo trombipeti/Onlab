@@ -7,7 +7,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <vector>
 
-#define BW_EDGE_TRESH 10
+#define BW_EDGE_TRESH 50
 
 /**
  * Generic sign function (returns -1 when val < 0, 0 when val = 0, 1 when val > 0)
@@ -29,7 +29,8 @@ bool PriceTagDetector::isBWEdge(int r1, int g1, int b1, int r2, int g2, int b2)
 void PriceTagDetector::detectBWEdges()
 {
     std::vector<cv::Mat> channels;
-    cv::GaussianBlur(img, img, cv::Size(5,5), 5);
+    cv::GaussianBlur(img, img, cv::Size(3,3), 3);
+    cv::Laplacian(img, img, img.type(), 3);
     cv::split(img, channels);
 
     cv::Mat edgeMapFuzzy(img.size(), CV_8UC1);
@@ -60,6 +61,10 @@ void PriceTagDetector::detectBWEdges()
             }
         }
     }
+    cv::namedWindow("Img", CV_WINDOW_NORMAL);
+    cv::imshow("Img", img);
+
+
     cv::namedWindow("Edge map", CV_WINDOW_NORMAL);
     cv::imshow("Edge map", edgeMapFuzzy);
 }
