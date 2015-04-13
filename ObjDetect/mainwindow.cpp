@@ -44,6 +44,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->minFeatDistSlider->setValue(25);
 
     ui->detectBtn->setEnabled(false);
+    ui->detectEdgesBtn->setEnabled(false);
+
+    ui->bwEdgeLimitSlider->setMaximum(255);
+    ui->bwEdgeLimitSlider->setEnabled(false);
+
+    ui->bwEdgeThreshSlider->setMaximum(255);
+    ui->bwEdgeThreshSlider->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -88,11 +95,6 @@ void MainWindow::on_loadRefBtn_clicked()
 
     resizeImg(refImage, refImage, 1000, 1000);
 
-
-    PriceTagDetector pt(refImage);
-
-    pt.detectBWEdges();
-
     ui->refPicLabel->setCVImage(refImage);
 
     if( ! testImage.empty())
@@ -100,6 +102,17 @@ void MainWindow::on_loadRefBtn_clicked()
         ui->detectBtn->setEnabled(true);
     }
 
+    pt = PriceTagDetector(refImage);
+
+    ui->bwEdgeLimitSlider->setEnabled(true);
+    ui->bwEdgeLimitSlider->setValue(pt.getBwEdgeLimit());
+    ui->bwEdgeLimitLabel->setText(QString::number(pt.getBwEdgeLimit()));
+
+    ui->bwEdgeThreshSlider->setEnabled(true);
+    ui->bwEdgeThreshSlider->setValue(pt.getBwEdgeThresh());
+    ui->bwEdgeThreshLabel->setText(QString::number(pt.getBwEdgeThresh()));
+
+    ui->detectEdgesBtn->setEnabled(true);
 }
 
 void MainWindow::on_loadDetectBtn_clicked()
@@ -180,4 +193,25 @@ void MainWindow::on_secondRatioSlider_valueChanged(int value)
     float ratio = (float)(value)/100.0f;
     matcher.setMinSecondTestRatio(ratio);
     ui->secondRatioLabel->setText(QString::number(ratio, 'f', 2));
+}
+
+void MainWindow::on_detectEdgesBtn_clicked()
+{
+    pt.detectBWEdges();
+
+    cv::Mat edges = pt.getEdgeMap();
+    cv::namedWindow("Edges", CV_WINDOW_NORMAL);
+    cv::imshow("Edges", edges);
+}
+
+void MainWindow::on_bwEdgeLimitSlider_valueChanged(int value)
+{
+    ui->bwEdgeLimitLabel->setText(QString::number(value));
+    pt.setBwEdgeLimit(value);
+}
+
+void MainWindow::on_bwEdgeThreshSlider_valueChanged(int value)
+{
+    ui->bwEdgeThreshLabel->setText(QString::number(value));
+    pt.setBwEdgeThresh(value);
 }

@@ -16,6 +16,49 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="1" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <item>
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>BW Edge limit</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="bwEdgeLimitLabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>40</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSlider" name="bwEdgeLimitSlider">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="4" column="0">
      <widget class="QPicLabel" name="refPicLabel">
       <property name="sizePolicy">
        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
@@ -40,7 +83,7 @@
       </property>
      </widget>
     </item>
-    <item row="5" column="0" colspan="3">
+    <item row="8" column="0" colspan="3">
      <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
        <widget class="QLabel" name="label_3">
@@ -83,7 +126,7 @@
       </item>
      </layout>
     </item>
-    <item row="6" column="0" colspan="3">
+    <item row="9" column="0" colspan="3">
      <layout class="QHBoxLayout" name="horizontalLayout_4">
       <item>
        <widget class="QLabel" name="label_4">
@@ -126,7 +169,7 @@
       </item>
      </layout>
     </item>
-    <item row="8" column="0" colspan="3">
+    <item row="11" column="0" colspan="3">
      <widget class="QPicLabel" name="detectLabel">
       <property name="sizePolicy">
        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
@@ -145,7 +188,7 @@
       </property>
      </widget>
     </item>
-    <item row="4" column="0" colspan="3">
+    <item row="7" column="0" colspan="3">
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
        <widget class="QLabel" name="label_2">
@@ -188,7 +231,53 @@
       </item>
      </layout>
     </item>
-    <item row="3" column="0" colspan="3">
+    <item row="0" column="2">
+     <widget class="QPushButton" name="loadDetectBtn">
+      <property name="text">
+       <string>Load test image</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="2">
+     <widget class="QPicLabel" name="testPicLabel">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <property name="margin">
+       <number>0</number>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="2">
+     <widget class="QPushButton" name="loadRefBtn">
+      <property name="text">
+       <string>Load reference image</string>
+      </property>
+     </widget>
+    </item>
+    <item row="10" column="0" colspan="3">
+     <widget class="QPushButton" name="detectBtn">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Detect matches</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="0" colspan="3">
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QLabel" name="label">
@@ -231,51 +320,55 @@
       </item>
      </layout>
     </item>
-    <item row="0" column="2">
-     <widget class="QPushButton" name="loadDetectBtn">
+    <item row="3" column="0" colspan="2">
+     <widget class="QPushButton" name="detectEdgesBtn">
       <property name="text">
-       <string>Load test image</string>
+       <string>Detect BW edges</string>
       </property>
      </widget>
     </item>
-    <item row="1" column="2">
-     <widget class="QPicLabel" name="testPicLabel">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-      <property name="margin">
-       <number>0</number>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0" colspan="2">
-     <widget class="QPushButton" name="loadRefBtn">
-      <property name="text">
-       <string>Load reference image</string>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="0" colspan="3">
-     <widget class="QPushButton" name="detectBtn">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Detect matches</string>
-      </property>
-     </widget>
+    <item row="2" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_6">
+      <item>
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>BW Edge thresh</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="bwEdgeThreshLabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>40</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSlider" name="bwEdgeThreshSlider">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>

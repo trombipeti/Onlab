@@ -7,6 +7,7 @@
 #include <opencv2/core/core.hpp>
 
 #include "imagematcher.h"
+#include "pricetagdetector.h"
 
 namespace Ui {
 class MainWindow;
@@ -35,6 +36,12 @@ private slots:
 
     void on_secondRatioSlider_valueChanged(int value);
 
+    void on_detectEdgesBtn_clicked();
+
+    void on_bwEdgeLimitSlider_valueChanged(int value);
+
+    void on_bwEdgeThreshSlider_valueChanged(int value);
+
 private:
     Ui::MainWindow *ui;
 
@@ -42,6 +49,7 @@ private:
     cv::Mat testImage;
 
     ImageMatcher matcher;
+    PriceTagDetector pt;
 
     void resizeImg(cv::Mat& img, cv::Mat& dest, int width, int height, bool keepPersp = true);
 };

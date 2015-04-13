@@ -8,6 +8,8 @@ class PriceTagDetector
 private:
     cv::Mat img;
 
+    cv::Mat edgeMapFuzzy;
+
     /**
      * @brief isBWEdge
      * Determines whether the given RGB pixel values can be part of a black-to-white edge.
@@ -22,9 +24,20 @@ private:
 
     int BWEdgeScore(cv::Vec3b point, cv::Vec3b prevPoint);
     int getAvgGrad(cv::Vec3b point, cv::Vec3b prevPoint);
+
+    int BwEdgeThresh = 30;
+    int BwEdgeLimit  = 130;
+
 public:
-    PriceTagDetector(cv::Mat const& _img);
+    PriceTagDetector(cv::Mat const& _img = cv::Mat());
+
     void detectBWEdges();
+
+    cv::Mat const& getEdgeMap();
+    int getBwEdgeThresh() const;
+    void setBwEdgeThresh(int value);
+    int getBwEdgeLimit() const;
+    void setBwEdgeLimit(int value);
 };
 
 #endif // PRICETAGDETECTOR_H
