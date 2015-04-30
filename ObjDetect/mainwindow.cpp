@@ -215,3 +215,8 @@ void MainWindow::on_bwEdgeThreshSlider_valueChanged(int value)
     ui->bwEdgeThreshLabel->setText(QString::number(value));
     pt.setBwEdgeThresh(value);
 }
+
+void MainWindow::on_actionOpen_video_triggered()
+{
+
+}

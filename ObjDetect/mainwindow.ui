@@ -20,7 +20,7 @@
       <item>
        <widget class="QLabel" name="label_5">
         <property name="text">
-         <string>BW Edge limit</string>
+         <string>BW Edge fuzzy limit</string>
         </property>
        </widget>
       </item>
@@ -332,7 +332,7 @@
       <item>
        <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>BW Edge thresh</string>
+         <string>BW Edge change</string>
         </property>
        </widget>
       </item>
@@ -372,6 +372,28 @@
     </item>
    </layout>
   </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>710</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuVideo">
+    <property name="title">
+     <string>Video</string>
+    </property>
+    <addaction name="actionOpen_video"/>
+   </widget>
+   <addaction name="menuVideo"/>
+  </widget>
+  <action name="actionOpen_video">
+   <property name="text">
+    <string>Open video</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

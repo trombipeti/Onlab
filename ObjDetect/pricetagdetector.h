@@ -2,6 +2,7 @@
 #define PRICETAGDETECTOR_H
 
 #include <opencv2/core/core.hpp>
+#include <vector>
 
 class PriceTagDetector
 {
@@ -9,6 +10,7 @@ private:
     cv::Mat img;
 
     cv::Mat edgeMapFuzzy;
+
 
     /**
      * @brief isBWEdge
@@ -26,7 +28,9 @@ private:
     int getAvgGrad(cv::Vec3b point, cv::Vec3b prevPoint);
 
     int BwEdgeThresh = 30;
-    int BwEdgeLimit  = 130;
+    int BwEdgeLimit  = 50;
+
+//    void detectShelfLines();
 
 public:
     PriceTagDetector(cv::Mat const& _img = cv::Mat());
@@ -38,6 +42,10 @@ public:
     void setBwEdgeThresh(int value);
     int getBwEdgeLimit() const;
     void setBwEdgeLimit(int value);
+
+    static void DrawHist(std::vector<int> data, const std::string& winname, int colWidth = 5);
+
+    static void DetectShelfLines(const cv::Mat& img, std::vector<cv::Vec4i> &lines);
 };
 
 #endif // PRICETAGDETECTOR_H

@@ -20,11 +20,13 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     qpiclabel.cpp \
     imagematcher.cpp \
-    pricetagdetector.cpp
+    pricetagdetector.cpp \
+    videoptd.cpp
 
 HEADERS  += mainwindow.h \
     qpiclabel.h \
     imagematcher.h \
-    pricetagdetector.h
+    pricetagdetector.h \
+    videoptd.h
 
 FORMS    += mainwindow.ui

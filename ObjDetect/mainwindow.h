@@ -42,6 +42,8 @@ private slots:
 
     void on_bwEdgeThreshSlider_valueChanged(int value);
 
+    void on_actionOpen_video_triggered();
+
 private:
     Ui::MainWindow *ui;
 
