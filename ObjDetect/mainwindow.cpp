@@ -6,6 +6,7 @@
 
 #include <QFileDialog>
 #include <QDir>
+#include <QMessageBox>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -13,6 +14,7 @@
 
 #include "imagematcher.h"
 #include "pricetagdetector.h"
+#include "videoptd.h"
 
 //#include <opencv2/nonfree/nonfree.hpp>
 //#include <opencv2/calib3d/calib3d.hpp>
@@ -91,26 +93,43 @@ void MainWindow::on_loadRefBtn_clicked()
     {
         return;
     }
-    refImage = cv::imread(fileName.toUtf8().data());
+    sift_QueryImg = cv::imread(fileName.toUtf8().data());
 
-    resizeImg(refImage, refImage, 1000, 1000);
+    resizeImg(sift_QueryImg, sift_QueryImg, 1000, 1000);
 
-    ui->refPicLabel->setCVImage(refImage);
+    ui->refPicLabel->setCVImage(sift_QueryImg);
 
-    if( ! testImage.empty())
+    if( ! sift_testImage.empty())
     {
         ui->detectBtn->setEnabled(true);
     }
 
-    pt = PriceTagDetector(refImage);
+}
+
+
+void MainWindow::on_loadBwBtn_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Open Image"), "/home/trombipeti/Képek/ObjDetect",
+                                                    tr("Image Files (*.png *.jpg *.jpeg *.bmp *.tif)"));
+    if(fileName.isEmpty())
+    {
+        return;
+    }
+    bw_QueryImg = cv::imread(fileName.toUtf8().data());
+
+    resizeImg(bw_QueryImg, bw_QueryImg, 1000, 1000);
+
+    ui->bwRefLabel->setCVImage(bw_QueryImg);
+
 
     ui->bwEdgeLimitSlider->setEnabled(true);
-    ui->bwEdgeLimitSlider->setValue(pt.getBwEdgeLimit());
-    ui->bwEdgeLimitLabel->setText(QString::number(pt.getBwEdgeLimit()));
+    ui->bwEdgeLimitSlider->setValue(PriceTagDetector::GetBwEdgeLimit());
+    ui->bwEdgeLimitLabel->setText(QString::number(PriceTagDetector::GetBwEdgeLimit()));
 
     ui->bwEdgeThreshSlider->setEnabled(true);
-    ui->bwEdgeThreshSlider->setValue(pt.getBwEdgeThresh());
-    ui->bwEdgeThreshLabel->setText(QString::number(pt.getBwEdgeThresh()));
+    ui->bwEdgeThreshSlider->setValue(PriceTagDetector::GetBwEdgeThresh());
+    ui->bwEdgeThreshLabel->setText(QString::number(PriceTagDetector::GetBwEdgeThresh()));
 
     ui->detectEdgesBtn->setEnabled(true);
 }
@@ -124,13 +143,13 @@ void MainWindow::on_loadDetectBtn_clicked()
     {
         return;
     }
-    testImage = cv::imread(fileName.toUtf8().data());
+    sift_testImage = cv::imread(fileName.toUtf8().data());
 
-    resizeImg(testImage, testImage, 1000, 1000);
+    resizeImg(sift_testImage, sift_testImage, 1000, 1000);
 
-    ui->testPicLabel->setCVImage(testImage);
+    ui->testPicLabel->setCVImage(sift_testImage);
 
-    if( ! refImage.empty())
+    if( ! sift_QueryImg.empty())
     {
         ui->detectBtn->setEnabled(true);
     }
@@ -139,11 +158,16 @@ void MainWindow::on_loadDetectBtn_clicked()
 
 void MainWindow::on_detectBtn_clicked()
 {
-    matcher.setRefImg(refImage);
-    matcher.setTestImg(testImage);
-    if(matcher.classify(true))
+    matcher.setRefImg(sift_QueryImg);
+    matcher.setTestImg(sift_testImage);
+    cv::Mat matched;
+    if(matcher.classify(matched))
     {
-        ui->detectLabel->setText("Egyezik");
+        try {
+        ui->detectLabel->setCVImage(matched);
+        } catch(const char* e) {
+            std::cout << "Exception: " << e << std::endl;
+        }
     }
     else
     {
@@ -197,26 +221,56 @@ void MainWindow::on_secondRatioSlider_valueChanged(int value)
 
 void MainWindow::on_detectEdgesBtn_clicked()
 {
-    pt.detectBWEdges();
-
-    cv::Mat edges = pt.getEdgeMap();
-    cv::namedWindow("Edges", CV_WINDOW_NORMAL);
-    cv::imshow("Edges", edges);
+    cv::Mat edges;
+    PriceTagDetector::DetectBWEdges(bw_QueryImg, edges);
+    cv::cvtColor(edges, edges, CV_GRAY2BGR);
+    ui->bwEdgesLabel->setCVImage(edges);
 }
 
 void MainWindow::on_bwEdgeLimitSlider_valueChanged(int value)
 {
     ui->bwEdgeLimitLabel->setText(QString::number(value));
-    pt.setBwEdgeLimit(value);
+    PriceTagDetector::SetBwEdgeLimit(value);
 }
 
 void MainWindow::on_bwEdgeThreshSlider_valueChanged(int value)
 {
     ui->bwEdgeThreshLabel->setText(QString::number(value));
-    pt.setBwEdgeThresh(value);
+    PriceTagDetector::SetBwEdgeThresh(value);
 }
 
 void MainWindow::on_actionOpen_video_triggered()
 {
-
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Open video"), QString(),
+                                                    tr("Video Files (*.avi *.mp4)"));
+    if(fileName.isEmpty())
+    {
+        return;
+    }
+    vptd_p = std::unique_ptr<VideoPTD>( new VideoPTD(fileName.toStdString().c_str()));
+    try
+    {
+        vptd_p.get()->start();
+        ui->actionStart_video->setEnabled(true);
+    }
+    catch(const char* e)
+    {
+        QMessageBox msgbox;
+        msgbox.setText(e);
+        msgbox.exec();
+    }
 }
+
+void MainWindow::on_actionStop_video_triggered()
+{
+    ui->actionStart_video->setEnabled(true);
+    vptd_p.get()->stop();
+}
+
+void MainWindow::on_actionStart_video_triggered()
+{
+    ui->actionStop_video->setEnabled(true);
+    vptd_p.get()->start();
+}
+

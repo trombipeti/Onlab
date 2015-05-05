@@ -147,7 +147,7 @@ bool ImageMatcher::validateMatches()
     return true;
 }
 
-bool ImageMatcher::classify(bool display_matches)
+bool ImageMatcher::classify(cv::Mat& drawnMatches)
 {
     if(refImage.img.empty())
     {
@@ -193,26 +193,17 @@ bool ImageMatcher::classify(bool display_matches)
 
     if(featureDist < minFeatureDist)
     {
-        if(display_matches)
+        std::vector<cv::Point2f> matched_points;
+
+        for(size_t i = 0;i<valid_matches.size();++i)
         {
-            cv::Mat validImg;
-
-            std::vector<cv::Point2f> matched_points;
-
-            for(size_t i = 0;i<valid_matches.size();++i)
-            {
-                matched_points.push_back(testImage.keyPoints[valid_matches[i].trainIdx].pt);
-            }
-
-            cv::Rect bbox = cv::boundingRect(cv::Mat(matched_points).reshape(2));
-            cv::rectangle(testImage.img, bbox, cv::Scalar(0,200,10), 2);
-
-            cv::drawMatches(refImage.img, refImage.keyPoints, testImage.img, testImage.keyPoints, valid_matches, validImg );
-
-            cv::namedWindow("Valid matches", CV_WINDOW_NORMAL);
-            cv::imshow("Valid matches", validImg);
-
+            matched_points.push_back(testImage.keyPoints[valid_matches[i].trainIdx].pt);
         }
+
+        cv::Rect bbox = cv::boundingRect(cv::Mat(matched_points).reshape(2));
+        cv::rectangle(testImage.img, bbox, cv::Scalar(0,200,10), 2);
+
+        cv::drawMatches(refImage.img, refImage.keyPoints, testImage.img, testImage.keyPoints, valid_matches, drawnMatches );
         return true;
     }
     else

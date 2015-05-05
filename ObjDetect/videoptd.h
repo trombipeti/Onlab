@@ -6,22 +6,44 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <thread>
 #include <mutex>
+#include <atomic>
 
 class VideoPTD
 {
 private:
-    volatile bool stopSignal;
-    cv::VideoCapture vidCap;
-
-    void processFrame(cv::Mat& frame);
-    void videoProcessThread();
+    volatile std::atomic_bool stopSignal;
 
     std::string videoFileName;
 
+    volatile std::atomic_bool videoRunning;
+
+    cv::VideoCapture vidCap;
+
+    void processFrame(cv::Mat &frame);
+
     std::mutex captureMutex;
+    std::thread captureThread;
 
 public:
-    VideoPTD(std::string& videoFile) : stopSignal(false), videoFileName(videoFile) {}
+
+    explicit VideoPTD(const char* videoFile = "")
+    {
+        stopSignal = false;
+        videoFileName = videoFile;
+        videoRunning = false;
+    }
+
+    VideoPTD(VideoPTD&& rhs) = delete;
+    VideoPTD& operator=(VideoPTD&& rhs) = delete;
+
+    virtual ~VideoPTD();
+
+    void videoProcessThread();
+
+    bool isStared() const
+    {
+        return (bool)videoRunning;
+    }
 
     void start();
 

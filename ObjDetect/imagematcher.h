@@ -77,7 +77,7 @@ public:
         testImage = ImageData{img};
     }
 
-    bool classify(bool display_matches = false);
+    bool classify(cv::Mat &drawnMatches);
 
 
     float getMinSecondTestRatio() const;

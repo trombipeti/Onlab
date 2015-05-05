@@ -9,6 +9,8 @@
 #include <map>
 #include <algorithm>
 
+int PriceTagDetector::BwEdgeThresh = 30;
+int PriceTagDetector::BwEdgeLimit  = 50;
 
 /**
  * Generic sign function (returns -1 when val < 0, 0 when val = 0, 1 when val > 0)
@@ -54,41 +56,69 @@ int PriceTagDetector::getAvgGrad(cv::Vec3b point, cv::Vec3b prevPoint)
             std::abs(point[2] - prevPoint[2])
             ) / 3;
 }
-int PriceTagDetector::getBwEdgeLimit() const
+
+int PriceTagDetector::getTheta(cv::Vec4i line, int& score)
+{
+    float x1, y1, x2, y2;
+    x1 = line[0];
+    y1 = line[1];
+    x2 = line[2];
+    y2 = line[3];
+    float xdiff = std::abs(x1 - x2);
+    float ydiff = std::abs(y1 - y2);
+    float theta = std::atan(ydiff / xdiff);
+    theta *= 180.0f/CV_PI;
+    theta = std::fmod(theta, 180.0f);
+    int theta_int = (int)(theta + 0.5f);
+    score = sqrt(xdiff*xdiff + ydiff*ydiff);
+    return theta_int;
+}
+int PriceTagDetector::GetBwEdgeLimit()
 {
     return BwEdgeLimit;
 }
 
-void PriceTagDetector::setBwEdgeLimit(int value)
+void PriceTagDetector::SetBwEdgeLimit(int value)
 {
     BwEdgeLimit = value;
 }
 
-int PriceTagDetector::getBwEdgeThresh() const
+int PriceTagDetector::GetBwEdgeThresh()
 {
     return BwEdgeThresh;
 }
 
-void PriceTagDetector::setBwEdgeThresh(int value)
+void PriceTagDetector::SetBwEdgeThresh(int value)
 {
     BwEdgeThresh = value;
 }
+
+
 
 void PriceTagDetector::DetectShelfLines(const cv::Mat& img, std::vector<cv::Vec4i> &lines)
 {
     cv::Mat cannyEdges, imgToProcess;
 //    cv::cvtColor(edgeMapFuzzy, cannyEdges, CV_GRAY2BGR);
 
-    if(img.cols > 1000 || img.rows > 1000)
+    if(img.cols > 1000 && img.cols > img.rows)
     {
-        cv::resize(img, imgToProcess, cv::Size(1000,1000));
+        int cols = 1000;
+        int rows = img.rows * (float)(1000.0f / img.cols);
+        cv::resize(img, imgToProcess, cv::Size(cols, rows));
+    }
+    else if(img.rows > 1000 && img.rows > img.cols)
+    {
+        int rows = 1000;
+        int cols = img.cols * (float)(1000.0f / img.rows);
+        cv::resize(img, imgToProcess, cv::Size(cols, rows));
     }
     else
     {
         imgToProcess = img.clone();
     }
     cv::GaussianBlur(imgToProcess, imgToProcess, cv::Size(5,5), 0);
-    cv::Canny(imgToProcess, cannyEdges, 5, 15);
+//    cv::Canny(imgToProcess, cannyEdges, 5, 15);
+    PriceTagDetector::DetectBWEdges(imgToProcess, cannyEdges);
 
     std::vector<cv::Vec4i> houghLines;
     cv::HoughLinesP(cannyEdges, houghLines, 1, CV_PI/180.0, 50, 50, 10);
@@ -98,18 +128,9 @@ void PriceTagDetector::DetectShelfLines(const cv::Mat& img, std::vector<cv::Vec4
     for( size_t i = 0; i < houghLines.size(); i++ )
     {
         cv::Vec4i l = houghLines[i];
-        float x1, y1, x2, y2;
-        x1 = l[0];
-        y1 = l[1];
-        x2 = l[2];
-        y2 = l[3];
-        float xdiff = std::abs(x1 - x2);
-        float ydiff = std::abs(y1 - y2);
-        float theta = std::atan(ydiff / xdiff);
-        theta *= 180.0f/CV_PI;
-        theta = std::fmod(theta, 180.0f);
-        int theta_int = (int)(theta + 0.5f);
-        thetas[theta_int] += sqrt(xdiff*xdiff + ydiff*ydiff);
+        int score = 0;
+        int theta_int = getTheta(l, score);
+        thetas[theta_int] += (score);
         if(thetas[theta_int] > maxval)
         {
             maxval = thetas[theta_int];
@@ -129,73 +150,9 @@ void PriceTagDetector::DetectShelfLines(const cv::Mat& img, std::vector<cv::Vec4
     }
 
     PriceTagDetector::DrawHist(thetavals, "Theta histogram");
+    lines = houghLines;
 }
 
-//void PriceTagDetector::detectShelfLines()
-//{
-//    cv::Mat cannyEdges, imgToProcess;
-////    cv::cvtColor(edgeMapFuzzy, cannyEdges, CV_GRAY2BGR);
-
-//    if(img.cols > 1000 || img.rows > 1000)
-//    {
-//        cv::resize(img, imgToProcess, cv::Size(1000,1000));
-//    }
-//    else
-//    {
-//        imgToProcess = img.clone();
-//    }
-//    cv::GaussianBlur(imgToProcess, imgToProcess, cv::Size(5,5), 0);
-////    cv::erode(img, imgToProcess, cv::Mat());
-////    cv::dilate(imgToProcess, imgToProcess, cv::Mat());
-//    cv::Canny(imgToProcess, cannyEdges, 5, 15);
-////    cv::Sobel(imgToProcess, cannyEdges, -1, 1, 1);
-////    cv::cvtColor(cannyEdges, cannyEdges, CV_BGR2GRAY);
-
-
-//    cv::HoughLinesP(cannyEdges, houghLines, 1, CV_PI/180.0, 50, 50, 10);
-
-//    std::map<int, int> thetas;
-//    int maxval = 0;
-//    for( size_t i = 0; i < houghLines.size(); i++ )
-//    {
-//        cv::Vec4i l = houghLines[i];
-//        float x1, y1, x2, y2;
-//        x1 = l[0];
-//        y1 = l[1];
-//        x2 = l[2];
-//        y2 = l[3];
-//        float xdiff = std::abs(x1 - x2);
-//        float ydiff = std::abs(y1 - y2);
-//        float theta = std::atan(ydiff / xdiff);
-//        theta *= 180.0f/CV_PI;
-//        theta = std::fmod(theta, 180.0f);
-//        int theta_int = (int)(theta + 0.5f);
-//        thetas[theta_int] += sqrt(xdiff*xdiff + ydiff*ydiff);
-//        if(thetas[theta_int] > maxval)
-//        {
-//            maxval = thetas[theta_int];
-//        }
-//    }
-
-
-//    std::vector<int> thetavals;
-//    for(auto mapit : thetas)
-//    {
-//        int val = mapit.second;
-//        if(maxval != 0)
-//        {
-//            val /= (maxval/200.0f);
-//        }
-//        thetavals.push_back(val);
-//    }
-
-//    DrawHist(thetavals, "Theta histogram");
-
-////    cv::line( imgToProcess, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(0,0,255), 3, CV_AA);
-////    cv::namedWindow("Hough lines", CV_WINDOW_NORMAL);
-////    cv::imshow("Hough lines", imgToProcess);
-
-//}
 
 void PriceTagDetector::DrawHist(std::vector<int> data, const std::string &winname, int colWidth)
 {
@@ -217,7 +174,7 @@ void PriceTagDetector::DrawHist(std::vector<int> data, const std::string &winnam
 //            {
                 for(int j = histrows - 1;j >= (data[i/colWidth] - minval);--j)
                 {
-                    hist.at<uchar>(j,i) = 100 + 155 * ((i/colWidth)%2);
+                    hist.at<uchar>(j,i) = 150 + 105 * ((i/colWidth)%2);
                 }
 //            }
         }
@@ -226,9 +183,11 @@ void PriceTagDetector::DrawHist(std::vector<int> data, const std::string &winnam
     }
 }
 
-void PriceTagDetector::detectBWEdges()
+void PriceTagDetector::DetectBWEdges(const cv::Mat& img, cv::Mat& output)
 {
     cv::Mat imgToProcess = img.clone();
+
+    cv::Mat edgeMapFuzzy(img.size(), CV_8UC1, cv::Scalar(0));
 
     std::vector<cv::Mat> channels;
 //    cv::medianBlur(img, imgToProcess, 3);
@@ -261,12 +220,12 @@ void PriceTagDetector::detectBWEdges()
         {
             int overallScore = 0;
             // Vertical edges
-            int vertScore = BWEdgeScore(imgToProcess.at<cv::Vec3b>(i,j),
+            int vertScore = PriceTagDetector::BWEdgeScore(imgToProcess.at<cv::Vec3b>(i,j),
                                         imgToProcess.at<cv::Vec3b>(i, j-1));
 //            overallScore += vertScore;
 
             // Horizontal edges
-            int horizScore = BWEdgeScore(imgToProcess.at<cv::Vec3b>(i,j),
+            int horizScore = PriceTagDetector::BWEdgeScore(imgToProcess.at<cv::Vec3b>(i,j),
                                          imgToProcess.at<cv::Vec3b>(i-1,j));
 //            overallScore += horizScore;
             overallScore = std::max(vertScore, horizScore);
@@ -275,19 +234,13 @@ void PriceTagDetector::detectBWEdges()
         }
     }
 
+    output = edgeMapFuzzy;
 
 //    cv::namedWindow("Processed image", CV_WINDOW_NORMAL);
 //    cv::imshow("Processed image", imgToProcess);
 }
 
-cv::Mat const& PriceTagDetector::getEdgeMap()
-{
-    return edgeMapFuzzy;
-}
-
 PriceTagDetector::PriceTagDetector(cv::Mat const& _img)
 {
-    img = _img.clone();
 
-    edgeMapFuzzy = cv::Mat(img.size(), CV_8UC1, cv::Scalar(0));
 }

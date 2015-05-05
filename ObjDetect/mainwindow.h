@@ -8,6 +8,7 @@
 
 #include "imagematcher.h"
 #include "pricetagdetector.h"
+#include "videoptd.h"
 
 namespace Ui {
 class MainWindow;
@@ -44,14 +45,24 @@ private slots:
 
     void on_actionOpen_video_triggered();
 
+    void on_actionStop_video_triggered();
+
+    void on_actionStart_video_triggered();
+
+    void on_loadBwBtn_clicked();
+
 private:
     Ui::MainWindow *ui;
 
-    cv::Mat refImage;
-    cv::Mat testImage;
+    cv::Mat sift_QueryImg;
+    cv::Mat sift_testImage;
+
+    cv::Mat bw_QueryImg;
 
     ImageMatcher matcher;
     PriceTagDetector pt;
+
+    std::unique_ptr<VideoPTD> vptd_p;
 
     void resizeImg(cv::Mat& img, cv::Mat& dest, int width, int height, bool keepPersp = true);
 };

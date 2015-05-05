@@ -7,10 +7,20 @@
 class PriceTagDetector
 {
 private:
-    cv::Mat img;
 
-    cv::Mat edgeMapFuzzy;
+    static int BwEdgeThresh;
+    static int BwEdgeLimit;
 
+//    void detectShelfLines();
+    static int getTheta(cv::Vec4i line, int &score);
+
+public:
+    PriceTagDetector(cv::Mat const& _img = cv::Mat());
+
+    static int GetBwEdgeThresh();
+    static void SetBwEdgeThresh(int value);
+    static int GetBwEdgeLimit();
+    static void SetBwEdgeLimit(int value);
 
     /**
      * @brief isBWEdge
@@ -20,28 +30,16 @@ private:
      * @param prevPoint Vec3b structure containing RGB values of the "previous" point
      * @return True if the pixel is likely a part of a BW edge
      */
-    bool isBWEdge(cv::Vec3b point, cv::Vec3b prevPoint);
+    static bool isBWEdge(cv::Vec3b point, cv::Vec3b prevPoint);
 
-    int getMinGrad(cv::Vec3b point, cv::Vec3b prevPoint);
+    static int getMinGrad(cv::Vec3b point, cv::Vec3b prevPoint);
 
-    int BWEdgeScore(cv::Vec3b point, cv::Vec3b prevPoint);
-    int getAvgGrad(cv::Vec3b point, cv::Vec3b prevPoint);
+    static int BWEdgeScore(cv::Vec3b point, cv::Vec3b prevPoint);
+    static int getAvgGrad(cv::Vec3b point, cv::Vec3b prevPoint);
 
-    int BwEdgeThresh = 30;
-    int BwEdgeLimit  = 50;
 
-//    void detectShelfLines();
 
-public:
-    PriceTagDetector(cv::Mat const& _img = cv::Mat());
-
-    void detectBWEdges();
-
-    cv::Mat const& getEdgeMap();
-    int getBwEdgeThresh() const;
-    void setBwEdgeThresh(int value);
-    int getBwEdgeLimit() const;
-    void setBwEdgeLimit(int value);
+    static void DetectBWEdges(const cv::Mat& img, cv::Mat& output);
 
     static void DrawHist(std::vector<int> data, const std::string& winname, int colWidth = 5);
 
