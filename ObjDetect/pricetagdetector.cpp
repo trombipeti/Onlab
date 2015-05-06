@@ -9,8 +9,8 @@
 #include <map>
 #include <algorithm>
 
-int PriceTagDetector::BwEdgeThresh = 30;
-int PriceTagDetector::BwEdgeLimit  = 50;
+//int PriceTagDetector::BwEdgeThresh = 30;
+//int PriceTagDetector::BwEdgeLimit  = 50;
 
 /**
  * Generic sign function (returns -1 when val < 0, 0 when val = 0, 1 when val > 0)
@@ -19,14 +19,11 @@ template <typename T> int sgn(T val) {
     return (T(0) < val) - (T(0) > val);
 }
 
-bool PriceTagDetector::isBWEdge(cv::Vec3b point, cv::Vec3b prevPoint) //int r1, int g1, int b1, int r2, int g2, int b2)
+bool PriceTagDetector::isBWEdge(cv::Vec3b point, cv::Vec3b prevPoint)
 {
     return (sgn(point[0] - prevPoint[0]) == sgn(point[1] - prevPoint[1]) &&
             sgn(point[1] - prevPoint[1]) == sgn(point[2] - prevPoint[2]) &&
-            point[0] != prevPoint[0] &&
-            std::abs(point[0] - prevPoint[0]) > BwEdgeThresh &&
-            std::abs(point[2] - prevPoint[2]) > BwEdgeThresh &&
-            std::abs(point[2] - prevPoint[2]) > BwEdgeThresh);
+            point[0] != prevPoint[0]);
 }
 
 int PriceTagDetector::BWEdgeScore(cv::Vec3b point, cv::Vec3b prevPoint)
@@ -35,6 +32,11 @@ int PriceTagDetector::BWEdgeScore(cv::Vec3b point, cv::Vec3b prevPoint)
     if(isBWEdge(point, prevPoint) )
     {
         result += getAvgGrad(point, prevPoint);
+//        std::cout << "-------------------------------------------" << std::endl;
+//        std::cout << "Average gradient: " << result << std::endl;
+//        std::cout << (int)point[0] << "-" << (int)prevPoint[0] << std::endl;
+//        std::cout << (int)point[1] << "-" << (int)prevPoint[1] << std::endl;
+//        std::cout << (int)point[2] << "-" << (int)prevPoint[2] << std::endl;
     }
 
     return result;
@@ -73,26 +75,6 @@ int PriceTagDetector::getTheta(cv::Vec4i line, int& score)
     score = sqrt(xdiff*xdiff + ydiff*ydiff);
     return theta_int;
 }
-int PriceTagDetector::GetBwEdgeLimit()
-{
-    return BwEdgeLimit;
-}
-
-void PriceTagDetector::SetBwEdgeLimit(int value)
-{
-    BwEdgeLimit = value;
-}
-
-int PriceTagDetector::GetBwEdgeThresh()
-{
-    return BwEdgeThresh;
-}
-
-void PriceTagDetector::SetBwEdgeThresh(int value)
-{
-    BwEdgeThresh = value;
-}
-
 
 
 void PriceTagDetector::DetectShelfLines(const cv::Mat& img, std::vector<cv::Vec4i> &lines)
@@ -118,7 +100,7 @@ void PriceTagDetector::DetectShelfLines(const cv::Mat& img, std::vector<cv::Vec4
     }
     cv::GaussianBlur(imgToProcess, imgToProcess, cv::Size(5,5), 0);
 //    cv::Canny(imgToProcess, cannyEdges, 5, 15);
-    PriceTagDetector::DetectBWEdges(imgToProcess, cannyEdges);
+    PriceTagDetector::DetectBWEdges(imgToProcess, cannyEdges, 30);
 
     std::vector<cv::Vec4i> houghLines;
     cv::HoughLinesP(cannyEdges, houghLines, 1, CV_PI/180.0, 50, 50, 10);
@@ -149,7 +131,7 @@ void PriceTagDetector::DetectShelfLines(const cv::Mat& img, std::vector<cv::Vec4
         thetavals.push_back(val);
     }
 
-    PriceTagDetector::DrawHist(thetavals, "Theta histogram");
+//    PriceTagDetector::DrawHist(thetavals, "Theta histogram");
     lines = houghLines;
 }
 
@@ -183,7 +165,7 @@ void PriceTagDetector::DrawHist(std::vector<int> data, const std::string &winnam
     }
 }
 
-void PriceTagDetector::DetectBWEdges(const cv::Mat& img, cv::Mat& output)
+void PriceTagDetector::DetectBWEdges(const cv::Mat& img, cv::Mat& output, int minGrad)
 {
     cv::Mat imgToProcess = img.clone();
 
@@ -222,14 +204,14 @@ void PriceTagDetector::DetectBWEdges(const cv::Mat& img, cv::Mat& output)
             // Vertical edges
             int vertScore = PriceTagDetector::BWEdgeScore(imgToProcess.at<cv::Vec3b>(i,j),
                                         imgToProcess.at<cv::Vec3b>(i, j-1));
-//            overallScore += vertScore;
+            overallScore += vertScore;
 
             // Horizontal edges
             int horizScore = PriceTagDetector::BWEdgeScore(imgToProcess.at<cv::Vec3b>(i,j),
                                          imgToProcess.at<cv::Vec3b>(i-1,j));
-//            overallScore += horizScore;
-            overallScore = std::max(vertScore, horizScore);
-            edgeMapFuzzy.at<uchar>(i,j) = (overallScore > BwEdgeLimit ? 255 : 0);
+            overallScore += horizScore;
+//            overallScore = std::max(vertScore, horizScore);
+            edgeMapFuzzy.at<uchar>(i,j) = (overallScore > minGrad ? 255 : 0);
 
         }
     }

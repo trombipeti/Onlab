@@ -49,10 +49,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->detectEdgesBtn->setEnabled(false);
 
     ui->bwEdgeLimitSlider->setMaximum(255);
-    ui->bwEdgeLimitSlider->setEnabled(false);
+//    ui->bwEdgeLimitSlider->setEnabled(false);
 
-    ui->bwEdgeThreshSlider->setMaximum(255);
-    ui->bwEdgeThreshSlider->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -123,13 +121,7 @@ void MainWindow::on_loadBwBtn_clicked()
     ui->bwRefLabel->setCVImage(bw_QueryImg);
 
 
-    ui->bwEdgeLimitSlider->setEnabled(true);
-    ui->bwEdgeLimitSlider->setValue(PriceTagDetector::GetBwEdgeLimit());
-    ui->bwEdgeLimitLabel->setText(QString::number(PriceTagDetector::GetBwEdgeLimit()));
-
-    ui->bwEdgeThreshSlider->setEnabled(true);
-    ui->bwEdgeThreshSlider->setValue(PriceTagDetector::GetBwEdgeThresh());
-    ui->bwEdgeThreshLabel->setText(QString::number(PriceTagDetector::GetBwEdgeThresh()));
+    ui->bwEdgeLimitLabel->setText(QString::number(ui->bwEdgeLimitSlider->value()));
 
     ui->detectEdgesBtn->setEnabled(true);
 }
@@ -222,7 +214,8 @@ void MainWindow::on_secondRatioSlider_valueChanged(int value)
 void MainWindow::on_detectEdgesBtn_clicked()
 {
     cv::Mat edges;
-    PriceTagDetector::DetectBWEdges(bw_QueryImg, edges);
+    int edgeLimit = ui->bwEdgeLimitSlider->value();
+    PriceTagDetector::DetectBWEdges(bw_QueryImg, edges, edgeLimit);
     cv::cvtColor(edges, edges, CV_GRAY2BGR);
     ui->bwEdgesLabel->setCVImage(edges);
 }
@@ -230,14 +223,9 @@ void MainWindow::on_detectEdgesBtn_clicked()
 void MainWindow::on_bwEdgeLimitSlider_valueChanged(int value)
 {
     ui->bwEdgeLimitLabel->setText(QString::number(value));
-    PriceTagDetector::SetBwEdgeLimit(value);
+//    PriceTagDetector::SetBwEdgeLimit(value);
 }
 
-void MainWindow::on_bwEdgeThreshSlider_valueChanged(int value)
-{
-    ui->bwEdgeThreshLabel->setText(QString::number(value));
-    PriceTagDetector::SetBwEdgeThresh(value);
-}
 
 void MainWindow::on_actionOpen_video_triggered()
 {

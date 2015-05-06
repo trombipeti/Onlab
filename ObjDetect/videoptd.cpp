@@ -53,8 +53,9 @@ void VideoPTD::videoProcessThread()
         processFrame(frame);
 
         {
-            std::lock_guard<std::mutex> lock(captureMutex);
+            captureMutex.lock();
             shouldExit = stopSignal;
+            captureMutex.unlock();
         }
         if(shouldExit)
         {
@@ -71,11 +72,12 @@ void VideoPTD::processFrame(cv::Mat &frame)
     PriceTagDetector::DetectShelfLines(frame, shelfLines);
 
 //    cv::Canny(frame, frame, 5, 15);
-    PriceTagDetector::DetectBWEdges(frame, frame);
+    PriceTagDetector::DetectBWEdges(frame, frame, 30);
+    cv::cvtColor(frame, frame, CV_GRAY2BGR);
 
     for(auto l : shelfLines)
     {
-        cv::line(frame, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(255,100,10), 2);
+        cv::line(frame, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(255,100,10), 1, CV_AA);
     }
     cv::imshow(videoFileName, frame);
 }

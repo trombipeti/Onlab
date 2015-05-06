@@ -8,8 +8,8 @@ class PriceTagDetector
 {
 private:
 
-    static int BwEdgeThresh;
-    static int BwEdgeLimit;
+//    static int BwEdgeThresh;
+//    static int BwEdgeLimit;
 
 //    void detectShelfLines();
     static int getTheta(cv::Vec4i line, int &score);
@@ -17,8 +17,6 @@ private:
 public:
     PriceTagDetector(cv::Mat const& _img = cv::Mat());
 
-    static int GetBwEdgeThresh();
-    static void SetBwEdgeThresh(int value);
     static int GetBwEdgeLimit();
     static void SetBwEdgeLimit(int value);
 
@@ -39,7 +37,7 @@ public:
 
 
 
-    static void DetectBWEdges(const cv::Mat& img, cv::Mat& output);
+    static void DetectBWEdges(const cv::Mat& img, cv::Mat& output, int minGrad);
 
     static void DrawHist(std::vector<int> data, const std::string& winname, int colWidth = 5);
 

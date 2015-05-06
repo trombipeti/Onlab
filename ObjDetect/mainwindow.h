@@ -41,8 +41,6 @@ private slots:
 
     void on_bwEdgeLimitSlider_valueChanged(int value);
 
-    void on_bwEdgeThreshSlider_valueChanged(int value);
-
     void on_actionOpen_video_triggered();
 
     void on_actionStop_video_triggered();

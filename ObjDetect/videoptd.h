@@ -49,8 +49,9 @@ public:
 
     void stop()
     {
-        std::lock_guard<std::mutex> lock(captureMutex);
+        captureMutex.lock();
         stopSignal = true;
+        captureMutex.unlock();
     }
 };
 
