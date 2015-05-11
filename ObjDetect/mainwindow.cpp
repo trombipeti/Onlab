@@ -85,28 +85,6 @@ void MainWindow::resizeImg(cv::Mat& img, cv::Mat& dest, int width, int height, b
     }
 }
 
-void MainWindow::on_loadRefBtn_clicked()
-{
-    QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Open Image Of Object"), "/home/trombipeti/Képek/ObjDetect",
-                                                    tr("Image Files (*.png *.jpg *.jpeg *.bmp *.tif)"));
-    if(fileName.isEmpty())
-    {
-        return;
-    }
-    sift_QueryImg = cv::imread(fileName.toUtf8().data());
-
-    resizeImg(sift_QueryImg, sift_QueryImg, 1000, 1000);
-
-    ui->refPicLabel->setCVImage(sift_QueryImg);
-
-    if( ! sift_testImage.empty())
-    {
-        ui->detectBtn->setEnabled(true);
-    }
-
-}
-
 
 void MainWindow::on_loadBwBtn_clicked()
 {
@@ -129,6 +107,28 @@ void MainWindow::on_loadBwBtn_clicked()
     ui->detectEdgesBtn->setEnabled(true);
 }
 
+void MainWindow::on_loadRefBtn_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Open Image Of Object"), "/home/trombipeti/Képek/ObjDetect",
+                                                    tr("Image Files (*.png *.jpg *.jpeg *.bmp *.tif)"));
+    if(fileName.isEmpty())
+    {
+        return;
+    }
+    sift_QueryImg = cv::imread(fileName.toUtf8().data());
+
+//    resizeImg(sift_QueryImg, sift_QueryImg, 1000, 1000);
+
+    ui->refPicLabel->setCVImage(sift_QueryImg);
+
+    if( ! sift_testImage.empty())
+    {
+        ui->detectBtn->setEnabled(true);
+    }
+
+}
+
 void MainWindow::on_loadDetectBtn_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
@@ -140,7 +140,7 @@ void MainWindow::on_loadDetectBtn_clicked()
     }
     sift_testImage = cv::imread(fileName.toUtf8().data());
 
-    resizeImg(sift_testImage, sift_testImage, 1000, 1000);
+//    resizeImg(sift_testImage, sift_testImage, 1000, 1000);
 
     ui->testPicLabel->setCVImage(sift_testImage);
 
@@ -158,11 +158,7 @@ void MainWindow::on_detectBtn_clicked()
     cv::Mat matched;
     if(matcher.classify(matched))
     {
-        try {
         ui->detectLabel->setCVImage(matched);
-        } catch(const char* e) {
-            std::cout << "Exception: " << e << std::endl;
-        }
     }
     else
     {
@@ -220,6 +216,10 @@ void MainWindow::on_detectEdgesBtn_clicked()
     int edgeLimit = ui->bwEdgeLimitSlider->value();
     PriceTagDetector::DetectBWEdges(bw_QueryImg, edges, edgeLimit);
     cv::cvtColor(edges, edges, CV_GRAY2BGR);
+
+    cv::medianBlur(edges, edges, 5);
+
+
     ui->bwEdgesLabel->setCVImage(edges);
 }
 
@@ -279,4 +279,16 @@ void MainWindow::on_loadShelfBtn_clicked()
 
     ui->shelfRefLabel->setCVImage(shelf_QueryImg);
     ui->detectShelfBtn->setEnabled(true);
+}
+
+void MainWindow::on_detectShelfBtn_clicked()
+{
+    std::vector<cv::Vec4i> lines;
+    cv::Mat imgWithLines = shelf_QueryImg.clone();
+    PriceTagDetector::DetectShelfLines(shelf_QueryImg, imgWithLines, lines);
+//    for(auto l: lines)
+//    {
+//        cv::line(imgWithLines, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(255,100,10), 1, CV_AA);
+//    }
+    ui->shelfLabel->setCVImage(imgWithLines);
 }

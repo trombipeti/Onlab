@@ -59,7 +59,7 @@ int PriceTagDetector::getAvgGrad(cv::Vec3b point, cv::Vec3b prevPoint)
             ) / 3;
 }
 
-int PriceTagDetector::getTheta(cv::Vec4i line, int& score)
+int PriceTagDetector::getTheta(cv::Vec4i line/*, int& score*/)
 {
     float x1, y1, x2, y2;
     x1 = line[0];
@@ -72,26 +72,29 @@ int PriceTagDetector::getTheta(cv::Vec4i line, int& score)
     theta *= 180.0f/CV_PI;
     theta = std::fmod(theta, 180.0f);
     int theta_int = (int)(theta + 0.5f);
-    score = sqrt(xdiff*xdiff + ydiff*ydiff);
+//    score = sqrt(sqrt(xdiff*xdiff + ydiff*ydiff));
     return theta_int;
 }
 
 
-void PriceTagDetector::DetectShelfLines(const cv::Mat& img, std::vector<cv::Vec4i> &lines)
+void PriceTagDetector::DetectShelfLines(const cv::Mat& img, cv::Mat& result, std::vector<cv::Vec4i> &lines)
 {
     cv::Mat cannyEdges, imgToProcess;
 //    cv::cvtColor(edgeMapFuzzy, cannyEdges, CV_GRAY2BGR);
 
+    float resizeRatio = 1.0f;
     if(img.cols > 1000 && img.cols > img.rows)
     {
         int cols = 1000;
-        int rows = img.rows * (float)(1000.0f / img.cols);
+        resizeRatio = (float)(1000.0f / img.cols);
+        int rows = img.rows * resizeRatio;
         cv::resize(img, imgToProcess, cv::Size(cols, rows));
     }
     else if(img.rows > 1000 && img.rows > img.cols)
     {
         int rows = 1000;
-        int cols = img.cols * (float)(1000.0f / img.rows);
+        resizeRatio = (float)(1000.0f / img.rows);
+        int cols = img.cols * resizeRatio;
         cv::resize(img, imgToProcess, cv::Size(cols, rows));
     }
     else
@@ -100,58 +103,100 @@ void PriceTagDetector::DetectShelfLines(const cv::Mat& img, std::vector<cv::Vec4
     }
     cv::GaussianBlur(imgToProcess, imgToProcess, cv::Size(5,5), 0);
 //    cv::Canny(imgToProcess, cannyEdges, 5, 15);
-//    cv::Sobel(imgToProcess, cannyEdges, -1, 1, 1);
-    PriceTagDetector::DetectBWEdges(imgToProcess, cannyEdges, 10);
+    cv::Sobel(imgToProcess, cannyEdges, -1, 1, 1);
+    cv::cvtColor(cannyEdges, cannyEdges, CV_BGR2GRAY);
+//    PriceTagDetector::DetectBWEdges(imgToProcess, cannyEdges, 0);
+    cv::medianBlur(cannyEdges, cannyEdges, 3);
 
     std::vector<cv::Vec4i> houghLines;
     cv::HoughLinesP(cannyEdges, houghLines, 1, CV_PI/180.0, 50, 100, 10);
 
     std::vector<cv::Vec2f> longLines;
     cv::HoughLines(cannyEdges, longLines, 1, CV_PI/180.0, 150);
-    lines.clear();
-    for( size_t i = 0; i < longLines.size(); i++ )
-    {
-        float rho = longLines[i][0], theta = longLines[i][1];
-        cv::Point pt1, pt2;
-        double a = cos(theta), b = sin(theta);
-        double x0 = a*rho, y0 = b*rho;
-        pt1.x = cvRound(x0 + 100*(-b));
-        pt1.y = cvRound(y0 + 100*(a));
-        pt2.x = cvRound(x0 - 100*(-b));
-        pt2.y = cvRound(y0 - 100*(a));
-        lines.push_back(cv::Vec4i(pt1.x, pt1.y, pt2.x, pt2.y));
-    }
+//    lines.clear();
+//    for( size_t i = 0; i < longLines.size(); i++ )
+//    {
+//        float rho = longLines[i][0], theta = longLines[i][1];
+//        cv::Point pt1, pt2;
+//        double a = cos(theta), b = sin(theta);
+//        double x0 = a*rho, y0 = b*rho;
+//        pt1.x = cvRound(x0 + 100*(-b));
+//        pt1.y = cvRound(y0 + 100*(a));
+//        pt2.x = cvRound(x0 - 100*(-b));
+//        pt2.y = cvRound(y0 - 100*(a));
+//        lines.push_back(cv::Vec4i(pt1.x, pt1.y, pt2.x, pt2.y));
+//    }
 
 
     lines = houghLines;
 
-//    std::map<int, int> thetas;
-//    int maxval = 0;
-//    for( size_t i = 0; i < houghLines.size(); i++ )
+    for(auto line : houghLines)
+    {
+        for(int i = 0;i<4;++i)
+        {
+            line[i] /= resizeRatio;
+        }
+        cv::line(result, cv::Point(line[0], line[1]), cv::Point(line[2], line[3]), cv::Scalar(255,100,10), 1.5/resizeRatio, CV_AA);
+    }
+
+    std::map<int, int> thetas;
+    std::map<int, int> rhos;
+    for(size_t i = 0;i<180;i++)
+    {
+        thetas[i] = 1;
+        rhos[i] = 1;
+    }
+    int maxval = 0;
+    int maxval_noscore = 0;
+
+//    for(size_t i = 0;i<longLines.size(); ++i)
 //    {
-//        cv::Vec4i l = houghLines[i];
-//        int score = 0;
-//        int theta_int = getTheta(l, score);
-//        thetas[theta_int] += (score);
-//        if(thetas[theta_int] > maxval)
-//        {
-//            maxval = thetas[theta_int];
-//        }
+//        float rho = longLines[i][0], theta = longLines[i][1];
+//        int theta_int = (int)(theta + 0.5f);
+//        int rho_int = (int)(rho + 0.5f);
+//        thetas[theta_int] += 1;
+//        rhos[rho_int] += 1;
 //    }
 
+    for( size_t i = 0; i < houghLines.size(); i++ )
+    {
+        cv::Vec4i l = houghLines[i];
+//        int score = 0;
+        int theta_int = getTheta(l/*, score*/);
+        thetas[theta_int] += 1;
+        if(thetas[theta_int] > maxval)
+        {
+            maxval = thetas[theta_int];
+        }
+    }
 
-//    std::vector<int> thetavals;
-//    for(auto mapit : thetas)
+
+    std::vector<int> thetavals;
+    for(auto mapit : thetas)
+    {
+        int val = mapit.second;
+        if(maxval != 0)
+        {
+            val /= (maxval/200.0f);
+        }
+        thetavals.push_back(val);
+    }
+
+
+//    std::vector<int> rhovals;
+//    for(auto mapit : rhos)
 //    {
 //        int val = mapit.second;
-//        if(maxval != 0)
+//        if(maxval_noscore != 0)
 //        {
-//            val /= (maxval/200.0f);
+//            val /= (maxval_noscore/200.0f);
 //        }
-//        thetavals.push_back(val);
+//        rhovals.push_back(val);
 //    }
 
-//    PriceTagDetector::DrawHist(thetavals, "Theta histogram");
+
+    PriceTagDetector::DrawHist(thetavals, "Theta histogram");
+//    PriceTagDetector::DrawHist(rhovals, "Rho histogram");
 }
 
 
@@ -171,13 +216,11 @@ void PriceTagDetector::DrawHist(std::vector<int> data, const std::string &winnam
         cv::Mat hist(cv::Size(histcols, histrows), CV_8UC1, cv::Scalar(0));
         for(int i = 0;i<histcols;++i)
         {
-//            for(int it = i; it<i+10;++it)
-//            {
-                for(int j = histrows - 1;j >= (data[i/colWidth] - minval);--j)
-                {
-                    hist.at<uchar>(j,i) = 150 + 105 * ((i/colWidth)%2);
-                }
-//            }
+            int coltop = (histrows - data[i/colWidth]);
+            for(int j = histrows - 1;j > coltop;--j)
+            {
+                hist.at<uchar>(j,i) = 150 + 105 * ((i/colWidth)%2);
+            }
         }
         cv::namedWindow(winname, CV_WINDOW_NORMAL);
         cv::imshow(winname, hist);

@@ -12,7 +12,7 @@ private:
 //    static int BwEdgeLimit;
 
 //    void detectShelfLines();
-    static int getTheta(cv::Vec4i line, int &score);
+    static int getTheta(cv::Vec4i line);
 
 public:
     PriceTagDetector(cv::Mat const& _img = cv::Mat());
@@ -41,7 +41,7 @@ public:
 
     static void DrawHist(std::vector<int> data, const std::string& winname, int colWidth = 5);
 
-    static void DetectShelfLines(const cv::Mat& img, std::vector<cv::Vec4i> &lines);
+    static void DetectShelfLines(const cv::Mat& img, cv::Mat &result, std::vector<cv::Vec4i> &lines);
 };
 
 #endif // PRICETAGDETECTOR_H

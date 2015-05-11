@@ -69,16 +69,16 @@ void VideoPTD::videoProcessThread()
 void VideoPTD::processFrame(cv::Mat &frame)
 {
     std::vector<cv::Vec4i> shelfLines;
-    PriceTagDetector::DetectShelfLines(frame, shelfLines);
+    PriceTagDetector::DetectShelfLines(frame, frame, shelfLines);
 
 //    cv::Canny(frame, frame, 5, 15);
 //    PriceTagDetector::DetectBWEdges(frame, frame, 30);
 //    cv::cvtColor(frame, frame, CV_GRAY2BGR);
 
-    for(auto l : shelfLines)
-    {
-        cv::line(frame, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(255,100,10), 1, CV_AA);
-    }
+//    for(auto l : shelfLines)
+//    {
+//        cv::line(frame, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(255,100,10), 1, CV_AA);
+//    }
     cv::imshow(videoFileName, frame);
 }
 

@@ -51,6 +51,8 @@ private slots:
 
     void on_loadShelfBtn_clicked();
 
+    void on_detectShelfBtn_clicked();
+
 private:
     Ui::MainWindow *ui;
 
