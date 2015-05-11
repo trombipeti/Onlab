@@ -5,6 +5,8 @@
 #include <QPixmap>
 #include <QImage>
 
+#include <ctime>
+
 #include <opencv2/core/core.hpp>
 
 class QPicLabel : public QLabel
@@ -20,8 +22,10 @@ public slots:
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent * event) override;
 private:
     cv::Mat cvImg;
+    int createTime;
 };
 
 #endif // QPICLABEL_H

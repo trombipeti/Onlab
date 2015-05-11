@@ -72,8 +72,8 @@ void VideoPTD::processFrame(cv::Mat &frame)
     PriceTagDetector::DetectShelfLines(frame, shelfLines);
 
 //    cv::Canny(frame, frame, 5, 15);
-    PriceTagDetector::DetectBWEdges(frame, frame, 30);
-    cv::cvtColor(frame, frame, CV_GRAY2BGR);
+//    PriceTagDetector::DetectBWEdges(frame, frame, 30);
+//    cv::cvtColor(frame, frame, CV_GRAY2BGR);
 
     for(auto l : shelfLines)
     {

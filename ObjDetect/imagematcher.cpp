@@ -149,6 +149,9 @@ bool ImageMatcher::validateMatches()
 
 bool ImageMatcher::classify(cv::Mat& drawnMatches)
 {
+    featureDist = INFINITY;
+    good_matches.clear();
+    valid_matches.clear();
     if(refImage.img.empty())
     {
         throw "Reference image not set!";

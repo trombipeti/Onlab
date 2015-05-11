@@ -8,8 +8,11 @@
 #include <QSizePolicy>
 
 #include <sstream>
+#include <ctime>
+#include <cstdlib>
 
 #include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 QPicLabel::QPicLabel(QWidget *parent) :
     QLabel(parent)
@@ -17,6 +20,7 @@ QPicLabel::QPicLabel(QWidget *parent) :
     QSizePolicy p = sizePolicy();
     p.setHeightForWidth(true);
     setSizePolicy(p);
+    createTime = std::rand();
 }
 
 QPixmap QPixmapFromCvMat(const cv::Mat &image)
@@ -55,6 +59,17 @@ void QPicLabel::resizeEvent(QResizeEvent *event)
 
     setPixmap(QPixmapFromCvMat(cvImg).scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 //    repaint();
+}
+
+void QPicLabel::mouseDoubleClickEvent(QMouseEvent * event)
+{
+    if(!cvImg.empty())
+    {
+        std::ostringstream winname;
+        winname << "CV image " << createTime;
+        cv::namedWindow(winname.str().c_str(), CV_WINDOW_NORMAL);
+        cv::imshow(winname.str().c_str(), cvImg);
+    }
 }
 
 void QPicLabel::setCVImage(const cv::Mat &image)

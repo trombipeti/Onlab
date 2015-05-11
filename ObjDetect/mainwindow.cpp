@@ -49,8 +49,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->detectEdgesBtn->setEnabled(false);
 
     ui->bwEdgeLimitSlider->setMaximum(255);
-//    ui->bwEdgeLimitSlider->setEnabled(false);
 
+    ui->actionStart_video->setEnabled(false);
+    ui->actionStop_video->setEnabled(false);
+
+    ui->detectShelfBtn->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -172,23 +175,23 @@ void MainWindow::on_goodMatchSlider_valueChanged(int value)
     matcher.setMinGoodMatchSize(value);
     ui->goodMatchLabel->setText(QString::number(value));
 
-    if(matcher.getMinValidMatchSize() > (size_t)value)
-    {
-        ui->validMatchSlider->setValue(value);
-    }
+//    if(matcher.getMinValidMatchSize() > (size_t)value)
+//    {
+//        ui->validMatchSlider->setValue(value);
+//    }
 
-    if(ui->validMatchSlider->maximum() > value)
-    {
-        ui->validMatchSlider->setMaximum(value);
-    }
-    else if(value < ui->validMatchSlider->minimum())
-    {
-        ui->validMatchSlider->setMinimum(value - 1);
-    }
-    else
-    {
-        ui->validMatchSlider->setMaximum(100);
-    }
+//    if(ui->validMatchSlider->maximum() > value)
+//    {
+//        ui->validMatchSlider->setMaximum(value);
+//    }
+//    else if(value < ui->validMatchSlider->minimum())
+//    {
+//        ui->validMatchSlider->setMinimum(value - 1);
+//    }
+//    else
+//    {
+//        ui->validMatchSlider->setMaximum(100);
+//    }
 }
 
 void MainWindow::on_validMatchSlider_valueChanged(int value)
@@ -240,7 +243,7 @@ void MainWindow::on_actionOpen_video_triggered()
     try
     {
         vptd_p.get()->start();
-        ui->actionStart_video->setEnabled(true);
+        ui->actionStop_video->setEnabled(true);
     }
     catch(const char* e)
     {
@@ -262,3 +265,18 @@ void MainWindow::on_actionStart_video_triggered()
     vptd_p.get()->start();
 }
 
+
+void MainWindow::on_loadShelfBtn_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Open Image Of Shelf"), "/home/trombipeti/Képek/ObjDetect",
+                                                    tr("Image Files (*.png *.jpg *.jpeg *.bmp *.tif)"));
+    if(fileName.isEmpty())
+    {
+        return;
+    }
+    shelf_QueryImg = cv::imread(fileName.toUtf8().data());
+
+    ui->shelfRefLabel->setCVImage(shelf_QueryImg);
+    ui->detectShelfBtn->setEnabled(true);
+}

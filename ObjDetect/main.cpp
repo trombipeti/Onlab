@@ -2,6 +2,8 @@
 #include <QApplication>
 
 #include <iostream>
+#include <ctime>
+#include <cstdlib>
 #include "videoptd.h"
 
 int main(int argc, char *argv[])
@@ -9,6 +11,8 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     MainWindow w;
     w.show();
+
+    std::srand(std::time(0));
 
     return a.exec();
 

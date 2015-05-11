@@ -49,6 +49,8 @@ private slots:
 
     void on_loadBwBtn_clicked();
 
+    void on_loadShelfBtn_clicked();
+
 private:
     Ui::MainWindow *ui;
 
@@ -56,6 +58,8 @@ private:
     cv::Mat sift_testImage;
 
     cv::Mat bw_QueryImg;
+
+    cv::Mat shelf_QueryImg;
 
     ImageMatcher matcher;
     PriceTagDetector pt;
