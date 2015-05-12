@@ -2,10 +2,14 @@
 
 #include <iostream>
 
-#include <QImage>
-#include <QResizeEvent>
-#include <QSize>
-#include <QSizePolicy>
+#include <Qt>
+//#include <QImage>
+//#include <QResizeEvent>
+//#include <QSize>
+//#include <QSizePolicy>
+#include <QMenu>
+//#include <QPoint>
+#include <QFileDialog>
 
 #include <sstream>
 #include <ctime>
@@ -21,6 +25,10 @@ QPicLabel::QPicLabel(QWidget *parent) :
     p.setHeightForWidth(true);
     setSizePolicy(p);
     createTime = std::rand();
+
+    setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
+        this, SLOT(showContextMenu(const QPoint&)));
 }
 
 QPixmap QPixmapFromCvMat(const cv::Mat &image)
@@ -80,4 +88,24 @@ void QPicLabel::setCVImage(const cv::Mat &image)
     h = (float)(height()) * 0.95f;
     setPixmap(QPixmapFromCvMat(cvImg).scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     repaint();
+}
+
+void QPicLabel::action_SaveImage()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, "Save image to...", QString(),
+                                                    "Image Files (*.png *.jpg *.jpeg *.bmp *.tif)");
+    if(fileName.isEmpty())
+    {
+        return;
+    }
+
+    cv::imwrite(fileName.toStdString(), cvImg);
+}
+
+void QPicLabel::showContextMenu(const QPoint &p)
+{
+    QPoint posGlobal = mapToGlobal(p);
+    QMenu menu;
+    menu.addAction("Save picture", this, SLOT(action_SaveImage()));
+    menu.exec(posGlobal);
 }

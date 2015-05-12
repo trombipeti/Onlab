@@ -76,7 +76,7 @@ void ImageMatcher::matchFeatures(std::vector<std::vector<cv::DMatch> > &matches,
 
 bool ImageMatcher::filterMatches(std::vector<std::vector<cv::DMatch> >& matches, std::vector<std::vector<cv::DMatch> >& matchesReverse)
 {
-    // Filter only matches that are much better than the others, and the are cross match between images
+    // Filter only matches that are much better than the others, and that are cross match between images
     for(auto knn : matches)
     {
         cv::DMatch& best = knn[0];

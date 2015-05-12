@@ -66,8 +66,8 @@ int PriceTagDetector::getTheta(cv::Vec4i line/*, int& score*/)
     y1 = line[1];
     x2 = line[2];
     y2 = line[3];
-    float xdiff = std::abs(x1 - x2);
-    float ydiff = std::abs(y1 - y2);
+    float xdiff = /*std::abs*/(x1 - x2);
+    float ydiff = /*std::abs*/(y1 - y2);
     float theta = std::atan(ydiff / xdiff);
     theta *= 180.0f/CV_PI;
     theta = std::fmod(theta, 180.0f);
@@ -102,17 +102,18 @@ void PriceTagDetector::DetectShelfLines(const cv::Mat& img, cv::Mat& result, std
         imgToProcess = img.clone();
     }
     cv::GaussianBlur(imgToProcess, imgToProcess, cv::Size(5,5), 0);
-//    cv::Canny(imgToProcess, cannyEdges, 5, 15);
-    cv::Sobel(imgToProcess, cannyEdges, -1, 1, 1);
-    cv::cvtColor(cannyEdges, cannyEdges, CV_BGR2GRAY);
+    cv::Canny(imgToProcess, cannyEdges, 5, 15);
+//    cv::Sobel(imgToProcess, cannyEdges, -1, 1, 1);
+//    cv::cvtColor(cannyEdges, cannyEdges, CV_BGR2GRAY);
+//    cv::imshow("Canny", cannyEdges);
 //    PriceTagDetector::DetectBWEdges(imgToProcess, cannyEdges, 0);
-    cv::medianBlur(cannyEdges, cannyEdges, 3);
+//    cv::medianBlur(cannyEdges, cannyEdges, 3);
 
     std::vector<cv::Vec4i> houghLines;
-    cv::HoughLinesP(cannyEdges, houghLines, 1, CV_PI/180.0, 50, 100, 10);
+    cv::HoughLinesP(cannyEdges, houghLines, 1, CV_PI/180.0, 50, 150, 10);
 
-    std::vector<cv::Vec2f> longLines;
-    cv::HoughLines(cannyEdges, longLines, 1, CV_PI/180.0, 150);
+//    std::vector<cv::Vec2f> longLines;
+//    cv::HoughLines(cannyEdges, longLines, 1, CV_PI/180.0, 150);
 //    lines.clear();
 //    for( size_t i = 0; i < longLines.size(); i++ )
 //    {
@@ -130,24 +131,14 @@ void PriceTagDetector::DetectShelfLines(const cv::Mat& img, cv::Mat& result, std
 
     lines = houghLines;
 
-    for(auto line : houghLines)
-    {
-        for(int i = 0;i<4;++i)
-        {
-            line[i] /= resizeRatio;
-        }
-        cv::line(result, cv::Point(line[0], line[1]), cv::Point(line[2], line[3]), cv::Scalar(255,100,10), 1.5/resizeRatio, CV_AA);
-    }
-
     std::map<int, int> thetas;
-    std::map<int, int> rhos;
+//    std::map<int, int> rhos;
     for(size_t i = 0;i<180;i++)
     {
         thetas[i] = 1;
-        rhos[i] = 1;
+//        rhos[i] = 1;
     }
     int maxval = 0;
-    int maxval_noscore = 0;
 
 //    for(size_t i = 0;i<longLines.size(); ++i)
 //    {
@@ -170,6 +161,22 @@ void PriceTagDetector::DetectShelfLines(const cv::Mat& img, cv::Mat& result, std
         }
     }
 
+    for(auto line : houghLines)
+    {
+        int line_theta = getTheta(line);
+        for(int i = 0;i<4;++i)
+        {
+            line[i] /= resizeRatio;
+        }
+        if(thetas[line_theta] >= (float)(maxval*0.7f))
+        {
+            cv::line(result, cv::Point(line[0], line[1]), cv::Point(line[2], line[3]), cv::Scalar(10,255,255), 5/resizeRatio, CV_AA);
+        }
+        else
+        {
+            cv::line(result, cv::Point(line[0], line[1]), cv::Point(line[2], line[3]), cv::Scalar(255,100,10), 1.5/resizeRatio, CV_AA);
+        }
+    }
 
     std::vector<int> thetavals;
     for(auto mapit : thetas)
@@ -216,7 +223,11 @@ void PriceTagDetector::DrawHist(std::vector<int> data, const std::string &winnam
         cv::Mat hist(cv::Size(histcols, histrows), CV_8UC1, cv::Scalar(0));
         for(int i = 0;i<histcols;++i)
         {
-            int coltop = (histrows - data[i/colWidth]);
+            int coltop = (histrows - data[i/colWidth] + minval);
+            if(coltop < 0)
+            {
+                coltop = 0;
+            }
             for(int j = histrows - 1;j > coltop;--j)
             {
                 hist.at<uchar>(j,i) = 150 + 105 * ((i/colWidth)%2);

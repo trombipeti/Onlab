@@ -18,7 +18,11 @@ public:
     void setCVImage(const cv::Mat& image);
 signals:
 
+private slots:
+    void action_SaveImage();
+
 public slots:
+    void showContextMenu(const QPoint& p);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
