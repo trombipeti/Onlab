@@ -112,8 +112,8 @@ void PriceTagDetector::DetectShelfLines(const cv::Mat& img, cv::Mat& result, std
     std::vector<cv::Vec4i> houghLines;
     cv::HoughLinesP(cannyEdges, houghLines, 1, CV_PI/180.0, 50, 150, 10);
 
-//    std::vector<cv::Vec2f> longLines;
-//    cv::HoughLines(cannyEdges, longLines, 1, CV_PI/180.0, 150);
+    std::vector<cv::Vec2f> longLines;
+    cv::HoughLines(cannyEdges, longLines, 1, CV_PI/180.0, 150);
 //    lines.clear();
 //    for( size_t i = 0; i < longLines.size(); i++ )
 //    {
@@ -132,22 +132,28 @@ void PriceTagDetector::DetectShelfLines(const cv::Mat& img, cv::Mat& result, std
     lines = houghLines;
 
     std::map<int, int> thetas;
-//    std::map<int, int> rhos;
+    std::map<int, int> rhos;
     for(size_t i = 0;i<180;i++)
     {
         thetas[i] = 1;
 //        rhos[i] = 1;
     }
-    int maxval = 0;
+    int maxval_theta = 0;
+    int maxval_rho   = 0;
 
-//    for(size_t i = 0;i<longLines.size(); ++i)
-//    {
-//        float rho = longLines[i][0], theta = longLines[i][1];
-//        int theta_int = (int)(theta + 0.5f);
-//        int rho_int = (int)(rho + 0.5f);
+    for(size_t i = 0;i<longLines.size(); ++i)
+    {
+        float rho = longLines[i][0], theta = longLines[i][1];
+        int theta_int = (int)(theta + 0.5f);
+        int rho_int = (int)(rho + 0.5f);
+        rho_int = rho_int - (rho_int % 10);
 //        thetas[theta_int] += 1;
-//        rhos[rho_int] += 1;
-//    }
+        rhos[rho_int] += 1;
+        if(rhos[rho_int] > maxval_rho)
+        {
+            maxval_rho = rhos[rho_int];
+        }
+    }
 
     for( size_t i = 0; i < houghLines.size(); i++ )
     {
@@ -155,9 +161,9 @@ void PriceTagDetector::DetectShelfLines(const cv::Mat& img, cv::Mat& result, std
 //        int score = 0;
         int theta_int = getTheta(l/*, score*/);
         thetas[theta_int] += 1;
-        if(thetas[theta_int] > maxval)
+        if(thetas[theta_int] > maxval_theta)
         {
-            maxval = thetas[theta_int];
+            maxval_theta = thetas[theta_int];
         }
     }
 
@@ -168,7 +174,7 @@ void PriceTagDetector::DetectShelfLines(const cv::Mat& img, cv::Mat& result, std
         {
             line[i] /= resizeRatio;
         }
-        if(thetas[line_theta] >= (float)(maxval*0.7f))
+        if(thetas[line_theta] >= (float)(maxval_theta*0.7f))
         {
             cv::line(result, cv::Point(line[0], line[1]), cv::Point(line[2], line[3]), cv::Scalar(10,255,255), 5/resizeRatio, CV_AA);
         }
@@ -182,28 +188,28 @@ void PriceTagDetector::DetectShelfLines(const cv::Mat& img, cv::Mat& result, std
     for(auto mapit : thetas)
     {
         int val = mapit.second;
-        if(maxval != 0)
+        if(maxval_theta != 0)
         {
-            val /= (maxval/200.0f);
+            val /= (maxval_theta/200.0f);
         }
         thetavals.push_back(val);
     }
 
 
-//    std::vector<int> rhovals;
-//    for(auto mapit : rhos)
-//    {
-//        int val = mapit.second;
-//        if(maxval_noscore != 0)
-//        {
-//            val /= (maxval_noscore/200.0f);
-//        }
-//        rhovals.push_back(val);
-//    }
+    std::vector<int> rhovals;
+    for(auto mapit : rhos)
+    {
+        int val = mapit.second;
+        if(maxval_rho != 0)
+        {
+            val /= (maxval_rho/200.0f);
+        }
+        rhovals.push_back(val);
+    }
 
 
     PriceTagDetector::DrawHist(thetavals, "Theta histogram");
-//    PriceTagDetector::DrawHist(rhovals, "Rho histogram");
+    PriceTagDetector::DrawHist(rhovals, "Rho histogram");
 }
 
 
