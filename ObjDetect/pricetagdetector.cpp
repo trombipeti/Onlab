@@ -283,13 +283,13 @@ void PriceTagDetector::DetectBWEdges(const cv::Mat& img, cv::Mat& output, int mi
             // Vertical edges
             int vertScore = PriceTagDetector::BWEdgeScore(imgToProcess.at<cv::Vec3b>(i,j),
                                         imgToProcess.at<cv::Vec3b>(i, j-1));
-            overallScore += vertScore;
+//            overallScore += vertScore;
 
             // Horizontal edges
             int horizScore = PriceTagDetector::BWEdgeScore(imgToProcess.at<cv::Vec3b>(i,j),
                                          imgToProcess.at<cv::Vec3b>(i-1,j));
-            overallScore += horizScore;
-//            overallScore = std::max(vertScore, horizScore);
+//            overallScore += horizScore;
+            overallScore = std::max(vertScore, horizScore);
             edgeMapFuzzy.at<uchar>(i,j) = (overallScore > minGrad ? 0 : 255);
 
         }

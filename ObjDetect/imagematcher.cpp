@@ -106,7 +106,9 @@ bool ImageMatcher::filterMatches(std::vector<std::vector<cv::DMatch> >& matches,
     }
     if(good_matches.size() < minGoodMatchSize)
     {
-        std::cout << "Good matches size too small (" << good_matches.size() << " < " << minGoodMatchSize << ")" << std::endl;
+        std::stringstream sstr;
+        sstr << "Good matches size too small (" << good_matches.size() << " < " << minGoodMatchSize << ")";
+        failCause = sstr.str();
         return false;
     }
 
@@ -140,7 +142,9 @@ bool ImageMatcher::validateMatches()
 
     if(valid_matches.size() < minValidMatchSize)
     {
-        std::cout << "Valid matches size too small (" << valid_matches.size() << " < " << minValidMatchSize << ")" << std::endl;
+        std::stringstream sstr;
+        sstr << "Valid matches size too small (" << valid_matches.size() << " < " << minValidMatchSize << ")";
+        failCause = sstr.str();
         featureDist = INFINITY;
         return false;
     }
@@ -172,7 +176,8 @@ bool ImageMatcher::classify(cv::Mat& drawnMatches)
 
     if( !filterMatches(knnMatches, knnMatchesReverse))
     {
-        std::cout << "Filter matches returned false" << std::endl;
+//        std::cout << "Filter matches returned false" << std::endl;
+//        failCause = "Filter matches returned false";
         return false;
     }
 
@@ -187,7 +192,8 @@ bool ImageMatcher::classify(cv::Mat& drawnMatches)
 
     if(!validateMatches())
     {
-        std::cout << "Validate matches returned false" << std::endl;
+//        std::cout << "Validate matches returned false" << std::endl;
+//        failCause = "Validate matches returned false";
         return false;
     }
 
@@ -211,7 +217,9 @@ bool ImageMatcher::classify(cv::Mat& drawnMatches)
     }
     else
     {
-        std::cout << "Feature distance too big: (" << featureDist << " > " << minFeatureDist << ")" << std::endl;
+        std::stringstream sstr;
+        sstr << "Feature distance too big: (" << featureDist << " > " << minFeatureDist << ")";
+        failCause = sstr.str();
     }
     return false;
 }

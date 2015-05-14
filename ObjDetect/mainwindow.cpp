@@ -153,8 +153,11 @@ void MainWindow::on_loadDetectBtn_clicked()
 
 void MainWindow::on_detectBtn_clicked()
 {
-    matcher.setRefImg(sift_QueryImg);
-    matcher.setTestImg(sift_testImage);
+    cv::Mat query, test;
+    resizeImg(sift_QueryImg, query, 1000, 1000);
+    resizeImg(sift_testImage, test, 1000, 1000);
+    matcher.setRefImg(query);
+    matcher.setTestImg(test);
     cv::Mat matched;
     if(matcher.classify(matched))
     {
@@ -162,7 +165,8 @@ void MainWindow::on_detectBtn_clicked()
     }
     else
     {
-        ui->detectLabel->setText("Nem egyezik");
+        std::string cause{"No match: " + matcher.getFailCause()};
+        ui->detectLabel->setText(cause.c_str());
     }
 }
 

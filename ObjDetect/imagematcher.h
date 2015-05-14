@@ -10,6 +10,7 @@
 #include <vector>
 #include <cmath>
 
+#include <string>
 
 class ImageMatcher
 {
@@ -51,6 +52,8 @@ private:
     std::vector< cv::DMatch > good_matches;
     std::vector< cv::DMatch > valid_matches;
 
+    std::string failCause = "";
+
     void detectKeypoints();
     void extractDescriptors();
     void matchFeatures(std::vector<std::vector<cv::DMatch> >& matches, std::vector<std::vector<cv::DMatch> >& matchesReverse);
@@ -75,6 +78,11 @@ public:
     void setTestImg(cv::Mat img)
     {
         testImage = ImageData{img};
+    }
+
+    std::string getFailCause()
+    {
+        return failCause;
     }
 
     bool classify(cv::Mat &drawnMatches);
