@@ -61,6 +61,7 @@ private:
     bool filterMatches(std::vector<std::vector<cv::DMatch> > &matches, std::vector<std::vector<cv::DMatch> > &matchesReverse );
     bool validateMatches();
 
+    std::vector<cv::Point2f> filterOutlierMatches(const std::vector<cv::Point2f> &matchesToFilter);
 public:
     ImageMatcher(cv::Mat const& _refImg = cv::Mat(), cv::Mat const& _testImg = cv::Mat()) :
         refImage{_refImg}, testImage{_testImg}

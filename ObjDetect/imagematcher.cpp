@@ -9,6 +9,7 @@
 #include <opencv2/nonfree/nonfree.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <vector>
+#include <algorithm>
 
 float ImageMatcher::getMinSecondTestRatio() const
 {
@@ -151,6 +152,50 @@ bool ImageMatcher::validateMatches()
     return true;
 }
 
+std::vector<cv::Point2f> ImageMatcher::filterOutlierMatches(const std::vector<cv::Point2f>& matchesToFilter)
+{
+    std::vector<double> xcoords;
+    std::vector<float> ycoords;
+    for(cv::Point2f p : matchesToFilter)
+    {
+        xcoords.push_back(p.x);
+        ycoords.push_back(p.y);
+    }
+
+    double xmean = std::accumulate(xcoords.begin(), xcoords.end(), 0) / xcoords.size();
+    double ymean = std::accumulate(ycoords.begin(), ycoords.end(), 0) / ycoords.size();
+
+    double xacc = 0;
+    std::for_each(xcoords.begin(), xcoords.end(), [&](const double f) {
+       xacc += (f-xmean) * (f-xmean);
+    });
+
+
+    double yacc = 0;
+    std::for_each(ycoords.begin(), ycoords.end(), [&](const double f) {
+       yacc += (f-ymean) * (f-ymean);
+    });
+
+    double xsd = sqrt(xacc / xcoords.size());
+    double ysd = sqrt(yacc / ycoords.size());
+
+    std::vector<cv::Point2f> filtered;
+    for(auto& pt : matchesToFilter)
+    {
+        if(
+            (sqrt( (pt.x - xmean) * (pt.x - xmean)) < 3*xsd) &&
+            (sqrt( (pt.y - ymean) * (pt.y - ymean)) < 3*ysd)
+            )
+        {
+            filtered.push_back(pt);
+        }
+    }
+    return filtered;
+
+
+
+}
+
 bool ImageMatcher::classify(cv::Mat& drawnMatches)
 {
     featureDist = INFINITY;
@@ -209,10 +254,13 @@ bool ImageMatcher::classify(cv::Mat& drawnMatches)
             matched_points.push_back(testImage.keyPoints[valid_matches[i].trainIdx].pt);
         }
 
+        matched_points = filterOutlierMatches(matched_points);
+
         cv::Rect bbox = cv::boundingRect(cv::Mat(matched_points).reshape(2));
         cv::rectangle(testImage.img, bbox, cv::Scalar(0,200,10), 2);
 
-        cv::drawMatches(refImage.img, refImage.keyPoints, testImage.img, testImage.keyPoints, valid_matches, drawnMatches );
+        cv::drawMatches(refImage.img, refImage.keyPoints, testImage.img, testImage.keyPoints, valid_matches, drawnMatches,
+                        cv::Scalar::all(-1), cv::Scalar::all(-1), std::vector<char>(), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
         return true;
     }
     else

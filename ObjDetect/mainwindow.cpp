@@ -25,13 +25,13 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->goodMatchSlider->setMinimum(7);
+    ui->goodMatchSlider->setMinimum(3);
     ui->goodMatchSlider->setMaximum(100);
     ui->goodMatchSlider->setSingleStep(1);
     ui->goodMatchSlider->setSingleStep(10);
     ui->goodMatchSlider->setValue(15);
 
-    ui->validMatchSlider->setMinimum(7);
+    ui->validMatchSlider->setMinimum(3);
     ui->validMatchSlider->setMaximum(100);
     ui->validMatchSlider->setSingleStep(1);
     ui->validMatchSlider->setSingleStep(10);

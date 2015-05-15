@@ -98,8 +98,18 @@ void QPicLabel::action_SaveImage()
     {
         return;
     }
+    std::string fn = fileName.toStdString();
+    if(fn.find_last_of(".") == fn.size())
+    {
+        fn.append("jpg");
+    }
 
-    cv::imwrite(fileName.toStdString(), cvImg);
+    if(fn.find_last_of(".") == std::string::npos)
+    {
+        fn.append(".jpg");
+    }
+
+    cv::imwrite(fn, cvImg);
 }
 
 void QPicLabel::showContextMenu(const QPoint &p)
