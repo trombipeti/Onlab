@@ -23,12 +23,12 @@ void ImageMatcher::setMinSecondTestRatio(float value)
 
 float ImageMatcher::getMinFeatureDist() const
 {
-    return minFeatureDist;
+    return maxFeatureDist;
 }
 
-void ImageMatcher::setMinFeatureDist(float value)
+void ImageMatcher::setMaxFeatureDist(float value)
 {
-    minFeatureDist = value;
+    maxFeatureDist = value;
 }
 
 size_t ImageMatcher::getMinValidMatchSize() const
@@ -245,7 +245,7 @@ bool ImageMatcher::classify(cv::Mat& drawnMatches)
 
     featureDist = featureDist / (valid_matches.size() * valid_matches.size() * valid_matches.size());
 
-    if(featureDist < minFeatureDist)
+    if(featureDist < maxFeatureDist)
     {
         std::vector<cv::Point2f> matched_points;
 
@@ -257,16 +257,17 @@ bool ImageMatcher::classify(cv::Mat& drawnMatches)
         matched_points = filterOutlierMatches(matched_points);
 
         cv::Rect bbox = cv::boundingRect(cv::Mat(matched_points).reshape(2));
-        cv::rectangle(testImage.img, bbox, cv::Scalar(0,200,10), 2);
+        cv::rectangle(testImage.img, bbox, cv::Scalar(50,0,160), 3);
 
         cv::drawMatches(refImage.img, refImage.keyPoints, testImage.img, testImage.keyPoints, valid_matches, drawnMatches,
-                        cv::Scalar::all(-1), cv::Scalar::all(-1), std::vector<char>(), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+                        cv::Scalar::all(-1), cv::Scalar::all(-1), std::vector<char>(),
+                        cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS | cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
         return true;
     }
     else
     {
         std::stringstream sstr;
-        sstr << "Feature distance too big: (" << featureDist << " > " << minFeatureDist << ")";
+        sstr << "Feature distance too big: (" << featureDist << " > " << maxFeatureDist << ")";
         failCause = sstr.str();
     }
     return false;

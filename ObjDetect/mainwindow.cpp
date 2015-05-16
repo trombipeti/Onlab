@@ -41,9 +41,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->secondRatioSlider->setMaximum(100);
     ui->secondRatioSlider->setValue(92);
 
-    ui->minFeatDistSlider->setMinimum(0);
-    ui->minFeatDistSlider->setMaximum(200);
-    ui->minFeatDistSlider->setValue(25);
+    ui->maxFeatDistSlider->setMinimum(0);
+    ui->maxFeatDistSlider->setMaximum(200);
+    ui->maxFeatDistSlider->setValue(25);
 
     ui->detectBtn->setEnabled(false);
     ui->detectEdgesBtn->setEnabled(false);
@@ -200,11 +200,11 @@ void MainWindow::on_validMatchSlider_valueChanged(int value)
     ui->validMatchLabel->setText(QString::number(value));
 }
 
-void MainWindow::on_minFeatDistSlider_valueChanged(int value)
+void MainWindow::on_maxFeatDistSlider_valueChanged(int value)
 {
     float dist = (float)(value)/100.0f;
-    matcher.setMinFeatureDist(dist);
-    ui->minFeatDistLabel->setText(QString::number(dist, 'f', 2));
+    matcher.setMaxFeatureDist(dist);
+    ui->maxFeatDistLabel->setText(QString::number(dist, 'f', 2));
 }
 
 void MainWindow::on_secondRatioSlider_valueChanged(int value)

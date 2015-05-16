@@ -33,7 +33,7 @@ private slots:
 
     void on_validMatchSlider_valueChanged(int value);
 
-    void on_minFeatDistSlider_valueChanged(int value);
+    void on_maxFeatDistSlider_valueChanged(int value);
 
     void on_secondRatioSlider_valueChanged(int value);
 

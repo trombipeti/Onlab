@@ -20,7 +20,7 @@ private:
     float featureDist = INFINITY;
     size_t minGoodMatchSize = 15;
     size_t minValidMatchSize = 10;
-    float minFeatureDist = 0.25f;
+    float maxFeatureDist = 0.25f;
     float minSecondTestRatio = 0.92f;
 
     struct ImageData
@@ -92,7 +92,7 @@ public:
     float getMinSecondTestRatio() const;
     void setMinSecondTestRatio(float value);
     float getMinFeatureDist() const;
-    void setMinFeatureDist(float value);
+    void setMaxFeatureDist(float value);
     size_t getMinValidMatchSize() const;
     void setMinValidMatchSize(const size_t &value);
     size_t getMinGoodMatchSize() const;
