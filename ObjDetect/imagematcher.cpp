@@ -11,6 +11,8 @@
 #include <vector>
 #include <algorithm>
 
+#include <ctime>
+
 float ImageMatcher::getMinSecondTestRatio() const
 {
     return minSecondTestRatio;
@@ -78,7 +80,7 @@ void ImageMatcher::matchFeatures(std::vector<std::vector<cv::DMatch> > &matches,
 bool ImageMatcher::filterMatches(std::vector<std::vector<cv::DMatch> >& matches, std::vector<std::vector<cv::DMatch> >& matchesReverse)
 {
     // Filter only matches that are much better than the others, and that are cross match between images
-    for(auto knn : matches)
+    for(auto& knn : matches)
     {
         cv::DMatch& best = knn[0];
         cv::DMatch& second = knn[1];
@@ -210,21 +212,33 @@ bool ImageMatcher::classify(cv::Mat& drawnMatches)
         throw "Test image not set!";
     }
 
-    detectKeypoints();
+    std::clock_t timer;
 
+    timer = clock();
+    detectKeypoints();
+    std::cout << "DT: " << (clock() - timer) << std::endl;
+
+    timer = clock();
     extractDescriptors();
+    std::cout << "EX: " << (clock() - timer) << std::endl;
 
     std::vector< std::vector< cv::DMatch> > knnMatches;
     std::vector< std::vector< cv::DMatch> > knnMatchesReverse;
 
+    timer = clock();
     matchFeatures(knnMatches, knnMatchesReverse);
+    std::cout << "MF: " << (clock() - timer) << std::endl;
 
+    timer = clock();
     if( !filterMatches(knnMatches, knnMatchesReverse))
     {
 //        std::cout << "Filter matches returned false" << std::endl;
 //        failCause = "Filter matches returned false";
+
+        std::cout << "FI: " << (clock() - timer) << std::endl;
         return false;
     }
+    std::cout << "FI: " << (clock() - timer) << std::endl;
 
 //    if(display_matches)
 //    {
@@ -235,12 +249,15 @@ bool ImageMatcher::classify(cv::Mat& drawnMatches)
 //        cv::imshow("Good matches", goodImg);
 //    }
 
+    timer = clock();
     if(!validateMatches())
     {
 //        std::cout << "Validate matches returned false" << std::endl;
 //        failCause = "Validate matches returned false";
+        std::cout << "VA: " << (clock() - timer) << std::endl;
         return false;
     }
+    std::cout << "VA: " << (clock() - timer) << std::endl;
 
 
     featureDist = featureDist / (valid_matches.size() * valid_matches.size() * valid_matches.size());
